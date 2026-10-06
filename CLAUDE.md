@@ -27,7 +27,7 @@ A pessoa não é técnica: quem roda comando é você.
    - o mapa de ângulos pronto **ou** os públicos para você escrever as copys.
 2. **Copys**: se a pessoa não mandou, escreva seguindo `docs/ANGULOS.md` (regra 5×5, tempos,
    preço, CTA). Salve em `campanhas/<nome>/copys.txt` no MESMO formato do exemplo
-   `campanhas/biblia-do-bebe/copys.txt`.
+   `campanhas/biblia-do-bebe/copys.txt` do repo [editingtool](https://github.com/Eduardo08GN/editingtool).
 3. **Importe e valide**:
    `python edt.py importar campanhas/<nome>/copys.txt --campanha <nome> --produto "..."`
    Se aparecer aviso de REGRA, corrija a copy (ou mostre à pessoa) antes de gastar TTS.

@@ -49,9 +49,9 @@ Pela interface também dá para criar campanhas e ajustar voz, modelo, transiç�
 ## Uso rápido
 
 ```bash
-python edt.py importar campanhas/biblia-do-bebe/copys.txt --campanha biblia-do-bebe
-python edt.py amostra biblia-do-bebe --base base.mp4 --id 1.1
-python edt.py produzir biblia-do-bebe --base base.mp4 --workers 3
+python edt.py importar campanhas/minha-campanha/copys.txt --campanha minha-campanha
+python edt.py amostra minha-campanha --base base.mp4 --id 1.1
+python edt.py produzir minha-campanha --base base.mp4 --workers 3
 ```
 
 A saída fica em `campanhas/<nome>/saida/`:

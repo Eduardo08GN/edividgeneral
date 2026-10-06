@@ -41,4 +41,4 @@ Padre, quantas famílias saem da missa sem saber ensinar a fé aos filhos pequen
 5. **Preço como argumento** (só em 2 de 5): "custa só dez reais", "por dez reais".
 6. **CTA fixo** no fim.
 
-Exemplo completo: `campanhas/biblia-do-bebe/copys.txt`.
+Exemplo completo: `campanhas/biblia-do-bebe/copys.txt` do repo [editingtool](https://github.com/Eduardo08GN/editingtool).
