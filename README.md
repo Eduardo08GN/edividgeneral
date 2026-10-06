@@ -1,6 +1,12 @@
-# editingtool
+# EdiVid (edividgeneral)
 
-Editor automático de criativos para a operação de low ticket. Recebe **um vídeo base** e o
+> **Ferramenta de edição de vídeo genérica.** Nasceu em 2026-10-06 como cópia do
+> [editingtool](https://github.com/Eduardo08GN/editingtool) (o motor de criativos low ticket, que continua
+> separado). A nova arquitetura ainda vai ser desenhada; até lá, o que está abaixo descreve o fluxo herdado.
+> Aqui a publicação no repo do time está **desligada**, o painel abre na porta **8801** e o atalho é
+> **`EdiVid.cmd`**.
+
+Editor automático herdado do editingtool (criativos de low ticket). Recebe **um vídeo base** e o
 **mapa de ângulos** (25 copys) e devolve 25 vídeos **9:16** com:
 
 - narração gerada pela **MiniMax** (voz padrão `Portuguese_ChattyGirl`);
@@ -33,7 +39,7 @@ O padrão é o **Remotion**: legenda, título, selo e CTA animados. Ele precisa 
 
 ## Interface
 
-Dê dois cliques em `EditingTool.cmd` (ou rode `python edt.py painel`). A janela abre com o painel da campanha:
+Dê dois cliques em `EdiVid.cmd` (ou rode `python edt.py painel`). A janela abre com o painel da campanha:
 - produzir e parar;
 - progresso;
 - os criativos organizados por público.

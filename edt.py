@@ -9,7 +9,7 @@
     python edt.py vozes [--filtro portug]
     python edt.py sfx [sync|listar]
     python edt.py musica <campanha>                                     (qual faixa cada criativo usaria)
-    python edt.py painel [--porta 8791] [--sem-janela]                 (abre a interface)
+    python edt.py painel [--porta 8801] [--sem-janela]                 (abre a interface)
     python edt.py publicar <campanha> [--repo URL --pasta "dentro/do/repo"]  (manda os entregues ao GitHub)
 """
 import argparse, os, sys
@@ -47,7 +47,7 @@ def main(argv):
     p = sub.add_parser("musica"); p.add_argument("campanha")
     p = sub.add_parser("remotion"); p.add_argument("campanha"); p.add_argument("--id", required=True); p.add_argument("--motion", action="store_true")
     p = sub.add_parser("publicar"); p.add_argument("campanha"); p.add_argument("--repo"); p.add_argument("--pasta")
-    p = sub.add_parser("painel"); p.add_argument("--porta", type=int, default=8791); p.add_argument("--sem-janela", action="store_true")
+    p = sub.add_parser("painel"); p.add_argument("--porta", type=int, default=8801); p.add_argument("--sem-janela", action="store_true")
     a = ap.parse_args(argv)
 
     if a.cmd == "remotion":

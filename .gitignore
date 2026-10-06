@@ -12,3 +12,5 @@ campanhas/*/base/
 *.m4a
 !docs/**/*.png
 painel/node_modules/
+node_modules/
+_remotion_public/

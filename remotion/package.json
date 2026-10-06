@@ -1,8 +1,8 @@
 {
-  "name": "editingtool-remotion",
+  "name": "edivid-remotion",
   "private": true,
   "version": "0.1.0",
-  "description": "Prova de conceito: motor de render Remotion para o EditingTool (le o plano.json do Python)",
+  "description": "Prova de conceito: motor de render Remotion para o EdiVid (le o plano.json do Python)",
   "scripts": {
     "studio": "remotion studio src/index.ts",
     "render": "remotion render src/index.ts Criativo"

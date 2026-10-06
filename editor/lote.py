@@ -207,7 +207,8 @@ def produzir(nome_camp, base=None, so=None, workers=2, ajustes=None, log=print, 
     # ⭐ PUBLICAR AUTOMATICO (pedido do operador, 2026-10-03): campanha com destino no GitHub manda os
     #    entregues para o repo do time assim que o lote termina. "auto": false no campanha.json desliga.
     pub = (config.ler_json(os.path.join(camp["_pasta"], "campanha.json")) or {}).get("publicar") or {}
-    if res and pub.get("repo") and pub.get("pasta") and pub.get("auto", True) and not (parar is not None and parar.is_set()):
+    from . import publicar as _pubchk
+    if res and not _pubchk.DESLIGADO and pub.get("repo") and pub.get("pasta") and pub.get("auto", True) and not (parar is not None and parar.is_set()):
         try:
             from . import publicar as _pub
             _pub.publicar(nome_camp, log=log, ids={q["id"] for q in res})     # so' o que ESTE lote produziu

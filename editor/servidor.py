@@ -2,7 +2,7 @@
 r"""SERVIDOR — a ferramenta por HTTP, para o painel (painel/dist). Padrao herdado do ow_agente
 (agente/servidor.py, so' consulta): FastAPI em 127.0.0.1, senha da sessao em toda rota /api.
 
-    python edt.py painel [--porta 8791] [--sem-janela]
+    python edt.py painel [--porta 8801] [--sem-janela]
 
 Leitura                                     Acoes (POST)
   GET /api/estado                             /api/campanhas/importar  {nome, produto, texto}
@@ -242,7 +242,7 @@ class Caminho(BaseModel):
 
 
 def criar_app(token, hosts):
-    app = FastAPI(title="editingtool", docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title="edivid", docs_url=None, redoc_url=None, openapi_url=None)
 
     @app.middleware("http")
     async def portao(request: Request, call_next):
@@ -439,7 +439,7 @@ def ja_aberta():
         return None
 
 
-def rodar(porta=8791, janela=True):
+def rodar(porta=8801, janela=True):
     import uvicorn
     # ⭐ instancia UNICA: se a ferramenta ja' esta' rodando, so' traz a janela de volta (nao abre outra)
     url = ja_aberta()

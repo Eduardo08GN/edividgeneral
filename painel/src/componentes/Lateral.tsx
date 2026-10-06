@@ -17,7 +17,7 @@ export function Lateral({ ctx, rota }: { ctx: Ctx; rota: Rota }) {
     <aside className="side">
       <div className="lockup">
         <img src="/logo.svg" alt="" width={30} height={30} />
-        <div className="marca"><span className="wordmark">EditingTool</span>
+        <div className="marca"><span className="wordmark">EdiVid</span>
           <span className="selos-marca"><span className="ver">1.0</span>{camp?.efetivo?.turbo && <span className="ver turbo-pill">⚡ TURBO</span>}</span></div>
       </div>
       <nav aria-label="Telas">

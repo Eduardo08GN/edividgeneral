@@ -21,6 +21,9 @@ import os, re, shutil, subprocess
 from . import campanha as _camp, config
 
 PROIBIDO = re.compile(r'[<>:"/\\|?*]+')
+# ⛔ EdiVid (2026-10-06): esta copia NAO publica em lugar nenhum. A publicacao era da operacao low ticket
+#    (repo do time). Mesmo com "publicar" num campanha.json, nada sai daqui.
+DESLIGADO = True
 
 
 def _nome(t):
@@ -51,6 +54,7 @@ def _versoes_antigas(pasta, cri, novo):
 def destino(camp):
     """Destino no GitHub da campanha. Sem destino proprio, HERDA o de outra campanha do MESMO produto
     (⭐ 2026-10-05: as variacoes da Biblia nao tinham o botao "Enviar para o GitHub")."""
+    if DESLIGADO: return None
     if (camp.get("publicar") or {}).get("repo"): return dict(camp["publicar"])
     prod = (camp.get("produto") or "").strip().lower()
     if not prod: return None
@@ -64,6 +68,7 @@ def destino(camp):
 
 
 def publicar(nome, repo=None, pasta=None, log=print, ids=None):
+    if DESLIGADO: raise SystemExit("publicar esta' desligado no EdiVid (era da operacao low ticket)")
     camp = _camp.carregar(nome)
     arq_camp = os.path.join(camp["_pasta"], "campanha.json")
     salvo = config.ler_json(arq_camp)

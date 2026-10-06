@@ -1,6 +1,20 @@
-# editingtool — o MOTOR. Leia isto primeiro.
+# EdiVid (edividgeneral) — editor de vídeo GENÉRICO. Leia isto primeiro.
 
-Você é o operador desta ferramenta para o time de low ticket. A pessoa entrega **um vídeo base**
+> ⛔ **Este repo NÃO é o motor de criativos low ticket.** Ele nasceu em 2026-10-06 como cópia do
+> [editingtool](https://github.com/Eduardo08GN/editingtool) e vai virar uma ferramenta de edições
+> genéricas, com outra arquitetura (a definir com o Eduardo na Fase 2).
+> - O editingtool continua sendo da operação low ticket. **Nunca** faça push para o remote
+>   `upstream-editingtool` (o push dele está desligado no git) nem para o repo do time
+>   (`lucasmottasilva18-coder/low-ticket`).
+> - **Publicação desligada:** `editor/publicar.py` tem `DESLIGADO = True`; nada sai desta ferramenta.
+> - **Identidade própria:** porta padrão do painel **8801** (o editingtool usa 8791), janela "EdiVid",
+>   atalho **`EdiVid.cmd`**, perfil do Edge em `.cache/janela_edge` deste repo.
+> - **Música:** as trilhas da Meta Sound Collection (`musica/biblioteca/`) só valem dentro dos apps da
+>   Meta. Vídeo que não vai para a Meta: pergunte ao Eduardo de onde vem a música.
+>
+> Até a nova arquitetura chegar, o fluxo abaixo é o herdado do editingtool e continua funcionando.
+
+Você é o operador desta ferramenta (fluxo herdado do time de low ticket). A pessoa entrega **um vídeo base**
 e **o mapa de ângulos** (ou só o produto e os públicos). Você faz o resto e devolve 20+
 criativos 9:16 prontos para subir na Meta, com legenda queimada, voz MiniMax, SFX e música.
 A pessoa não é técnica: quem roda comando é você.
@@ -27,7 +41,7 @@ A pessoa não é técnica: quem roda comando é você.
 
 ## A interface (o jeito normal de operar)
 
-Dois cliques em **`EditingTool.cmd`** (ou `python edt.py painel`) abre a janela:
+Dois cliques em **`EdiVid.cmd`** (ou `python edt.py painel`) abre a janela:
 **Painel** (produzir/parar, progresso, atividade, criativos por publico) · **Criativos** (filtros,
 player, refazer um so') · **Nova campanha** (colar o mapa de angulos, escolher a pasta de clipes) ·
 **Ajustes** da campanha (voz, modelo 1/2/alternar, estilo de transicao, musica, SFX).
