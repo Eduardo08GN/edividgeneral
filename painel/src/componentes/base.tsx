@@ -1,53 +1,8 @@
-import { useEffect, useState } from "react";
-import { AlertTriangle, Check, X } from "lucide-react";
-import { midia, miniatura, type Criativo } from "../api";
-import { link } from "../rota";
-import { ETAPA, seg } from "../textos";
-
-export function Selo({ etapa }: { etapa: Criativo["etapa"] }) {
-  const s = ETAPA[etapa];
-  const icone = s.tom === "ok" ? <Check size={13} strokeWidth={2.4} aria-hidden /> :
-                s.tom === "no" ? <X size={13} strokeWidth={2.4} aria-hidden /> : <span className="dot" aria-hidden />;
-  return <span className={`tag tag-${s.tom}`}>{icone}{s.texto}</span>;
-}
+import { useEffect, useRef, useState } from "react";
+import { AlertTriangle, Check, Pause, Play, X } from "lucide-react";
+import { midia } from "../api";
 
 export function Girando() { return <span className="spin" aria-hidden />; }
-
-// ⭐ entregue: o cartao E' o video; passando o mouse ele toca (com som; se o navegador barrar, mudo).
-// ⛔ o <video> so' EXISTE durante o hover (2026-10-03): invisivel o tempo todo, o Edge em modo app
-//    desenhava um resto do player ("1:00") por cima do selo — e 25 players montados pesavam a janela.
-export function CardCriativo({ c }: { c: Criativo }) {
-  const [hover, setHover] = useState(false);
-  const [tocando, setTocando] = useState(false);
-  const trabalhando = c.etapa === "narrando" || c.etapa === "renderizando";
-  const quando = (el: HTMLVideoElement | null) => {
-    if (!el || !hover) return;
-    el.muted = false;
-    el.play().catch(() => { el.muted = true; return el.play(); }).then(() => setTocando(true)).catch(() => undefined);
-  };
-  return (
-    <a className="panel vcard" href={link.criativo(c.id)}
-       onMouseEnter={() => c.entregue && setHover(true)} onMouseLeave={() => { setHover(false); setTocando(false); }}>
-      <div className="stage">
-        {c.entregue && !trabalhando ? (
-          <>
-            <img src={miniatura(c.entregue, 360, 2.0)} alt="" loading="lazy" decoding="async" className={tocando ? "some" : ""} />
-            {hover && <video ref={quando} src={midia(c.entregue)} loop playsInline preload="auto" aria-hidden className={tocando ? "" : "some"} />}
-          </>
-        ) : (
-          <div className="stage-vazio"><div>{trabalhando && <Girando />}<strong>{c.angulo}</strong></div></div>
-        )}
-        <Selo etapa={c.etapa} />
-        {c.duracao ? <span className="canto">{seg(c.duracao)}</span> : null}
-        {c.turbo && c.entregue ? <span className="canto-turbo" title="Feito no Modo Turbo">⚡</span> : null}
-      </div>
-      <div className="body">
-        <div className="quote">{c.id} · {c.angulo}</div>
-        <p className="meta">alvo {c.alvo_s}s{c.preco ? <><b>/</b>com preço</> : null}{c.musica ? <><b>/</b>♪ {c.musica}</> : null}</p>
-      </div>
-    </a>
-  );
-}
 
 export interface Aviso { texto: string; tom: "ok" | "erro"; id: number }
 
@@ -77,4 +32,54 @@ export function useAcao(avisar: (t: string, tom?: "ok" | "erro") => void) {
     finally { setRodando(null); }
   };
   return { rodando, rodar };
+}
+
+// ⭐ um audio so' para a janela inteira: tocar uma amostra para a anterior (ouvir 4 vozes nao vira coral)
+const AUDIO = typeof Audio !== "undefined" ? new Audio() : null;
+let tocandoAgora = "";
+const ouvintes = new Set<() => void>();
+AUDIO?.addEventListener("ended", () => { tocandoAgora = ""; ouvintes.forEach((f) => f()); });
+
+export function tocar(caminho: string) {
+  if (!AUDIO) return;
+  if (tocandoAgora === caminho && !AUDIO.paused) { AUDIO.pause(); tocandoAgora = ""; }
+  else { AUDIO.src = midia(caminho, Date.now()); AUDIO.play().catch(() => undefined); tocandoAgora = caminho; }
+  ouvintes.forEach((f) => f());
+}
+
+export function useTocando(caminho?: string | null) {
+  const [, setN] = useState(0);
+  useEffect(() => { const f = () => setN((n) => n + 1); ouvintes.add(f); return () => { ouvintes.delete(f); }; }, []);
+  return !!caminho && tocandoAgora === caminho;
+}
+
+/** Botao redondo de ouvir. `obter` gera o arquivo na hora (ex.: amostra de voz) se ainda nao existir. */
+export function Ouvir({ caminho, obter, rotulo = "Ouvir", pequeno }: { caminho?: string | null; obter?: () => Promise<string>; rotulo?: string; pequeno?: boolean }) {
+  const [gerando, setGerando] = useState(false);
+  const [atual, setAtual] = useState<string | null>(caminho ?? null);
+  useEffect(() => { if (caminho) setAtual(caminho); }, [caminho]);
+  const tocando = useTocando(atual);
+  const clicar = async () => {
+    if (atual) { tocar(atual); return; }
+    if (!obter) return;
+    setGerando(true);
+    try { const c = await obter(); setAtual(c); tocar(c); }
+    finally { setGerando(false); }
+  };
+  return (
+    <button type="button" className={`ouvir${pequeno ? " pequeno" : ""}${tocando ? " on" : ""}`} onClick={clicar} disabled={gerando}
+            aria-label={tocando ? "Pausar" : rotulo} title={tocando ? "Pausar" : rotulo}>
+      {gerando ? <Girando /> : tocando ? <Pause size={pequeno ? 12 : 14} /> : <Play size={pequeno ? 12 : 14} />}
+    </button>
+  );
+}
+
+/** Ondinha decorativa que mexe enquanto toca. */
+export function Onda({ ativa }: { ativa: boolean }) {
+  const ref = useRef([6, 14, 20, 10, 16, 8, 18, 12, 6, 15]);
+  return (
+    <span className={`onda${ativa ? " ativa" : ""}`} aria-hidden>
+      {ref.current.map((h, i) => <i key={i} style={{ height: h, animationDelay: `${i * 70}ms` }} />)}
+    </span>
+  );
 }

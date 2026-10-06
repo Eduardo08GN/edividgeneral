@@ -1,11 +1,10 @@
 {
-  "name": "edivid-remotion",
+  "name": "autotube-remotion",
   "private": true,
   "version": "0.1.0",
-  "description": "Prova de conceito: motor de render Remotion para o EdiVid (le o plano.json do Python)",
+  "description": "Motor de video do AutoTube: modelos genericos (src/modelos) e composicoes de cada projeto (src/_projetos, fora do git)",
   "scripts": {
-    "studio": "remotion studio src/index.ts",
-    "render": "remotion render src/index.ts Criativo"
+    "studio": "remotion studio src/index.ts"
   },
   "dependencies": {
     "@remotion/animated-emoji": "4.0.532",

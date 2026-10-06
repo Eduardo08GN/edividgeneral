@@ -1,0 +1,5 @@
+Fontes OFL (SIL Open Font License 1.1), as mesmas do painel:
+- Bricolage Grotesque (bricolage-*.woff2)
+- JetBrains Mono (jbmono.woff2)
+- Public Sans (publicsans-*.woff2)
+Origem: pacotes @fontsource do painel (painel/node_modules).

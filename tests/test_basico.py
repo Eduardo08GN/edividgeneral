@@ -2,56 +2,14 @@
 """Testes sem rede e sem ffmpeg:  python -m pytest tests  (ou: python tests/test_basico.py)"""
 import os, sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from editor import alinhar, campanha, legendas, montagem, musica, sfx
+from editor import alinhar, producao, projeto, sfx
 
-TXT = """Público 1 - Religioso (copys escolhidas)
-
-1.1 Padre (20 s, sem preço)
-Padre, quantas famílias saem da missa sem saber ensinar a fé aos filhos pequenos? Garanta o seu. Clique em saiba mais e confira.
-
-1.2 Pastor (31 s, com preço)
-Pastor, custa só dez reais.
-Clique em saiba mais e confira.
-"""
-
-
-def test_importa_formato_do_time():
-    c = campanha.importar_texto(TXT)
-    assert [x["id"] for x in c["criativos"]] == ["1.1", "1.2"]
-    assert c["criativos"][1]["preco"] and c["criativos"][1]["alvo_s"] == 31
-    assert c["criativos"][1]["copy"].endswith("Clique em saiba mais e confira.")
-    assert any("publico 1" in a for a in campanha.validar(c))       # so 2 criativos: avisa
 
 
 def test_casar_texto_usa_grafia_da_copy():
     ouvidas = [("A", 0, .2), ("Bíblia", .2, .5), ("tem", .5, .7), ("70", .7, 1.0), ("cards", 1.0, 1.3)]
     pal, rel = alinhar.casar_texto(ouvidas, "A Bíblia tem setenta cards")
     assert [p[0] for p in pal] == ["A", "Bíblia", "tem", "setenta", "cards"]
-
-
-def test_cartoes_equilibrados_sem_palavra_sozinha():
-    ws = "você que conduz o batismo ou a apresentação de bebês ouve esse compromisso o tempo todo:".split()
-    pal = [(w, i * .3, i * .3 + .25) for i, w in enumerate(ws)]
-    tam = [len(c["palavras"]) for c in montagem.cartoes(pal, 3)]
-    assert sum(tam) == len(ws) and min(tam) >= 2 and max(tam) <= 3
-
-
-def test_preco_vira_selo():
-    pal = [("custa", 0, .3), ("só", .3, .5), ("dez", .5, .7), ("reais.", .7, 1.0)]
-    assert montagem.momento_preco(pal, {"gatilho": "reais"})[1] == "SÓ R$ 10"
-
-
-def test_cta_e_destaque():
-    pal = [("Garanta", 0, .3), ("o", .3, .4), ("seu.", .4, .6), ("Clique", .7, 1), ("em", 1, 1.1)]
-    assert sfx.indice_cta(pal) == 3
-    assert legendas.papel(["A", "B", "C"], 1, None, legendas.estilo(11)) == ["base", "realce", "base"]
-
-
-def test_perfil_de_musica():
-    assert musica.perfil({"angulo": "Padre", "publico": "Religioso", "copy": ""}) == "fe_emocional"
-    assert musica.perfil({"angulo": "Rodinha", "publico": "Professoras", "copy": "turma"}) == "brincar_alegre"
-
-
 
 
 def test_ajuste_de_velocidade_nao_linear():
@@ -103,6 +61,44 @@ def test_cta_aceita_clica():
     pal = [("Garante", 0, 1), ("Clica", 1, 2), ("no", 2, 3), ("botão", 3, 4)]
     assert sfx.indice_cta(pal) == 1 and sfx.indice_cta(pal, "clique") == 1
     assert sfx.indice_cta([("clicar", 0, 1)]) is None
+
+
+def test_frases_equilibradas_sem_palavra_sozinha():
+    """Legenda cinetica: a sentenca vira pedacos equilibrados ("rapido." nunca fica sozinha na tela)."""
+    ws = "Quem posta todo dia cresce mais rápido. Mas editar vídeo toma o seu tempo.".split()
+    fr = producao.frases([(w, i * .3, i * .3 + .25) for i, w in enumerate(ws)])
+    tam = [len(f["palavras"]) for f in fr]
+    assert sum(tam) == len(ws) and min(tam) >= 3 and max(tam) <= 6, tam
+    assert all(f["palavras"][-1]["w"][-1] in ".," or f is not fr[-1] for f in fr)
+
+
+def test_trecho_da_amostra_fecha_a_frase():
+    copy = " ".join(["palavra"] * 20) + ". " + " ".join(["outra"] * 30) + "."
+    t = producao.trecho_amostra(copy)
+    assert t.endswith(".") and len(t.split()) == 20
+    assert producao.trecho_amostra("") == producao.TEXTO_AMOSTRA
+
+
+def test_ciclo_do_projeto():
+    """Criar, mudar copy/voz: as etapas e a 'chave' da narracao acompanham (narracao velha nao vale)."""
+    import tempfile
+    from editor import config
+    antes = config.PROJETOS_DIR
+    config.PROJETOS_DIR = tempfile.mkdtemp()
+    try:
+        p = projeto.criar("Meu vídeo", "9:16", 30)
+        assert p["id"] == "meu-video" and projeto.criar("Meu vídeo")["id"] == "meu-video-2"
+        assert [e["ok"] for e in projeto.etapas(p)] == [False, False, False, False, True, False]
+        p = projeto.alterar(p["id"], lambda q: q.update(copy="Um teste curto.", voz={"id": "Portuguese_ReliableMan", "velocidade": 1.0}))
+        assert [e["ok"] for e in projeto.etapas(p)][:3] == [False, True, True]
+        k1 = projeto.chave_narracao(p)
+        p = projeto.alterar(p["id"], lambda q: q.update(copy="Outro texto."))
+        assert projeto.chave_narracao(p) != k1 and not projeto.narracao_ok(p)
+        assert projeto.tamanho(p) == (1080, 1920)
+        assert [r["id"] for r in projeto.lista()] and projeto.carregar("meu-video")["atividade"][0]["texto"] == "Projeto criado"
+    finally:
+        config.PROJETOS_DIR = antes
+
 
 if __name__ == "__main__":  # noqa
     for n, f in list(globals().items()):

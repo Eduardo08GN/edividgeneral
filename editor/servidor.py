@@ -1,199 +1,68 @@
 # -*- coding: utf-8 -*-
-r"""SERVIDOR — a ferramenta por HTTP, para o painel (painel/dist). Padrao herdado do ow_agente
+r"""SERVIDOR — o AutoTube por HTTP, para o painel (painel/dist). Padrao herdado do ow_agente
 (agente/servidor.py, so' consulta): FastAPI em 127.0.0.1, senha da sessao em toda rota /api.
 
     python edt.py painel [--porta 8801] [--sem-janela]
 
-Leitura                                     Acoes (POST)
-  GET /api/estado                             /api/campanhas/importar  {nome, produto, texto}
-  GET /api/campanhas                          /api/campanhas/{nome}/abrir
-  GET /api/campanhas/{nome}                   /api/campanhas/{nome}/base     {caminho}
-  GET /api/base/analisar?caminho=             /api/campanhas/{nome}/ajustes  {...}
-  GET /api/midia?caminho=&t=                  /api/produzir  {campanha, ids?, refazer?}
-  GET /api/miniatura?caminho=&w=&t=           /api/parar
-                                              /api/abrir-pasta {caminho}
-⛔ `?k=` (senha) tambem vale na URL: <video src> nao manda cabecalho. (`t` e' o tempo do quadro.)
-⛔ Midia so' de dentro de campanhas/, musica/ e sfx/ — o servidor nao serve o disco inteiro.
+Leitura                                   Acoes (POST)
+  GET /api/estado                           /api/projetos                    {nome, formato, duracao_alvo, destino, briefing, modo}
+  GET /api/projetos/{id}                    /api/projetos/{id}               {campos que mudaram}
+  GET /api/vozes[?atualizar=1]              /api/projetos/{id}/amostra       {voz, velocidade}
+  GET /api/musicas  GET /api/sfx            /api/projetos/{id}/produzir      {tarefa: narrar|previa|final|tudo}
+  GET /api/ajustes                          /api/vozes/amostra               {voz, velocidade}
+  GET /api/midia?caminho=                   /api/ajustes  /api/parar  /api/abrir-pasta {caminho}
+  GET /api/miniatura?caminho=&w=&t=
+⛔ `?k=` (senha) tambem vale na URL: <video src> nao manda cabecalho.
+⛔ Midia so' de dentro de projetos/, musica/, sfx/ e das amostras — o servidor nao serve o disco inteiro.
 """
-import hashlib, io, json, os, secrets, socket, threading, time
-from datetime import datetime
+import hashlib, os, secrets, shutil, socket, threading
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
-from . import campanha as _camp, config, lote, montagem, musica, transicoes
+from . import config, musica, producao, projeto
 
 PAINEL = os.path.join(config.RAIZ, "painel", "dist")
 CACHE_MINI = os.path.join(config.CACHE_DIR, "miniaturas")
-ESTADO_UI = os.path.join(config.CACHE_DIR, "painel.json")
-RAIZES = [config.CAMPANHAS_DIR, os.path.join(config.RAIZ, "musica"), config.SFX_DIR]
+AJUSTES = os.path.join(config.CACHE_DIR, "ajustes.json")
+RAIZES = [config.PROJETOS_DIR, os.path.join(config.RAIZ, "musica"), config.SFX_DIR, os.path.join(config.CACHE_DIR, "amostras")]
+VERSAO = "1.0"
 
 
-# ── producao em segundo plano ─────────────────────────────────────────────────
-class Produtor:
-    """Um lote por vez. Guarda a etapa de cada criativo e o registro para o painel."""
-
-    def __init__(self):
-        self.lock = threading.Lock()
-        self.thread = None
-        self.parar = threading.Event()
-        self.campanha = None
-        self.etapas = {}             # id -> fila|narrando|renderizando|entregue|erro|parado
-        self.registro = []           # [{hora, texto}]
-        self.inicio = None
-
-    def log(self, texto):
-        with self.lock:
-            self.registro.insert(0, {"hora": datetime.now().strftime("%H:%M"), "texto": str(texto)})
-            del self.registro[300:]
-
-    def etapa(self, cid, e):
-        with self.lock: self.etapas[cid] = e
-
-    @property
-    def rodando(self):
-        return bool(self.thread and self.thread.is_alive())
-
-    def iniciar(self, nome, ids=None, refazer=False, workers=2):
-        if self.rodando: raise HTTPException(409, "ja' existe uma producao rodando")
-        camp = carregar(nome)
-        if not camp.get("base"): raise HTTPException(400, "defina o video base da campanha antes de produzir")
-        self.parar.clear(); self.campanha = nome; self.inicio = time.time()
-        with self.lock: self.etapas = {}
-
-        def rodar():
-            try:
-                r = lote.produzir(nome, camp["base"], set(ids) if ids else None, workers, None,
-                                  log=self.log, refazer=refazer, etapa=self.etapa, parar=self.parar)
-                self.log(f"producao terminou: {r['feitos']} entregue(s)" + (f", {len(r['erros'])} erro(s)" if r["erros"] else ""))
-            except BaseException as e:                           # noqa: BLE001 (SystemExit inclusive)
-                self.log(f"⚠ producao parou: {e}")
-        self.thread = threading.Thread(target=rodar, daemon=True); self.thread.start()
-
-
-PRODUTOR = Produtor()
-
-
-# ── leitura do disco ──────────────────────────────────────────────────────────
-def carregar(nome):
-    """campanha.carregar, mas com erro HTTP legivel (o motor usa SystemExit, que a rota nao converte)."""
+def _carregar(pid):
     try:
-        return _camp.carregar(nome)
-    except SystemExit as e:
-        raise HTTPException(404, str(e))
+        return projeto.carregar(pid)
+    except FileNotFoundError:
+        raise HTTPException(404, "projeto não existe")
 
 
-def _ui():
-    return config.ler_json(ESTADO_UI, {}) or {}
+def detalhe(pid):
+    p = _carregar(pid)
+    pasta = projeto.pasta(pid)
+    vs = projeto.versoes(p)
+    for v in vs:
+        if v.get("folha"): v["folha"] = os.path.join(pasta, v["folha"])
+    mat = []
+    for m in p.get("material") or []:
+        arq = os.path.join(pasta, m["arquivo"]) if not os.path.isabs(m["arquivo"]) else m["arquivo"]
+        if os.path.exists(arq): mat.append(dict(m, caminho=arq))
+    amostras = {}
+    for v, a in (p.get("amostras") or {}).items():
+        arq = os.path.join(pasta, a)
+        if os.path.exists(arq): amostras[v] = arq
+    nar = p.get("narracao") or {}
+    return dict(p, pasta=pasta, etapas=projeto.etapas(p), versoes=vs, material=mat, amostras=amostras,
+                tem_cenas=os.path.isdir(os.path.join(pasta, "cenas")),
+                narracao=dict(nar, ok=projeto.narracao_ok(p), arquivo=os.path.join(pasta, "narracao.wav")) if nar else None,
+                estimativa={"palavras": len(projeto.palavras_da_copy(p.get("copy"))), "segundos": projeto.duracao_estimada(p.get("copy"))},
+                efetivo={"voz": projeto.cfg(p)["tts"]["voz"], "velocidade": projeto.cfg(p)["tts"]["velocidade"]})
 
 
-def _salvar_ui(**kw):
-    d = _ui(); d.update(kw); config.escrever_json(ESTADO_UI, d)
-
-
-def lista_campanhas():
-    out = []
-    if not os.path.isdir(config.CAMPANHAS_DIR): return out
-    for d in sorted(os.listdir(config.CAMPANHAS_DIR)):
-        c = config.ler_json(os.path.join(config.CAMPANHAS_DIR, d, "campanha.json"))
-        if not c: continue
-        saida = os.path.join(config.CAMPANHAS_DIR, d, "saida")
-        prontos = 0
-        for x in (os.listdir(saida) if os.path.isdir(saida) else []):
-            qa = config.ler_json(os.path.join(saida, x, "qa.json")) or {}
-            if qa.get("entregue") and os.path.exists(qa["entregue"]): prontos += 1   # so' conta video que EXISTE
-        out.append({"nome": d, "produto": c.get("produto", ""), "criativos": len(c.get("criativos", [])), "prontos": prontos})
-    return out
-
-
-def detalhe_campanha(nome):
-    camp = carregar(nome)
-    saida = os.path.join(camp["_pasta"], "saida")
-    cfg = config.padrao(camp.get("ajustes"))
-    criativos = []
-    for c in camp["criativos"]:
-        pasta = os.path.join(saida, f"{c['id']}-{config.slug(c['angulo'], 30)}")
-        qa = config.ler_json(os.path.join(pasta, "qa.json")) or {}
-        plano = config.ler_json(os.path.join(pasta, "plano.json")) or {}
-        entregue = qa.get("entregue") if qa.get("entregue") and os.path.exists(qa["entregue"]) else None
-        if not entregue: qa, plano = {}, {}       # ⛔ relatorio de um video que nao existe mais nao vai para a tela
-        etapa = PRODUTOR.etapas.get(c["id"]) if PRODUTOR.campanha == nome else None
-        # ⭐ "erro"/"parado" da rodada nao escondem um video que existe (ex.: refeito depois pela linha de comando)
-        if etapa in ("erro", "parado") and entregue: etapa = None
-        if not etapa: etapa = "entregue" if entregue else "pendente"
-        if etapa == "entregue" and qa.get("avisos"): etapa = "aviso"
-        criativos.append({
-            **{k: c[k] for k in ("id", "publico_n", "publico", "angulo", "alvo_s", "preco", "copy")},
-            "etapa": etapa, "entregue": entregue, "duracao": qa.get("duracao"), "avisos": qa.get("avisos") or [],
-            "musica": (qa.get("musica") or {}).get("titulo"), "voz": (qa.get("tts") or {}).get("velocidade"),
-            "sfx": len(qa.get("sfx") or []), "modelo": plano.get("modelo"), "motor": qa.get("motor"),
-            "zona_segura": qa.get("zona_segura") or [], "bpm": qa.get("bpm"), "motion": qa.get("motion") or [],
-            "entrega": _entrega(qa.get("entrega")),
-            "turbo": bool(qa.get("turbo") or (qa.get("motor") == "remotion" and qa.get("motion"))),
-            "transicoes": [t["tipo"] for t in plano.get("transicoes", []) if t.get("tipo") != "seco"],
-            "perfil_musica": musica.perfil(c), "pasta": pasta if os.path.isdir(pasta) else None,
-        })
-    base = camp.get("base")
-    return {"nome": nome, "turbo_recursos": turbo_recursos(camp, cfg) if cfg.get("turbo") else [], "produto": camp.get("produto", ""), "pasta": camp["_pasta"], "base": base,
-            "base_ok": bool(base and os.path.exists(base)), "regra": _camp.validar(camp), "criativos": criativos,
-            "ajustes": camp.get("ajustes") or {}, "efetivo": {
-                "voz": cfg["tts"]["voz"], "velocidade": cfg["tts"]["velocidade"], "modelo": cfg.get("modelo"),
-                "motor": cfg.get("motor", "ffmpeg"), "motion_graphics": cfg["video"].get("motion_graphics") or {},
-                "emojis": bool((cfg["video"].get("emojis") or {}).get("ativo")),
-                "selos": bool((cfg["video"].get("selos") or {}).get("ativo")),
-                "camera_lenta": bool((cfg["video"].get("camera_lenta") or {}).get("ativo")),
-                "turbo": bool(cfg.get("turbo")),
-                "musica": cfg["audio"].get("musica"), "sfx": cfg["audio"].get("sfx", True),
-                "legenda_estilo": cfg["legenda"]["estilo"], "transicoes": cfg.get("transicoes", {})},
-            "entregues_dir": os.path.join(saida, "_entregues"), "publicar": _pub_destino(camp)}
-
-
-def _pub_destino(camp):
-    from . import publicar as _p
-    return _p.destino(camp)
-
-
-def _entrega(e):
-    """Resultado do QA de entrega para a tela (a folha so' vai se o arquivo existir)."""
-    if not e: return None
-    return {"falhas": e.get("falhas") or [], "avisos": e.get("avisos") or [], "lufs": e.get("lufs"), "pico": e.get("pico"),
-            "folha": e["folha"] if e.get("folha") and os.path.exists(e["folha"]) else None}
-
-
-def turbo_recursos(camp, cfg):
-    """O que o Modo Turbo liga nesta campanha, e se cada recurso e' pertinente aqui (com o motivo)."""
-    import re as _re
-    from . import motor_remotion
-    rem = motor_remotion.disponivel()
-    produto = camp.get("produto") or ""
-    tem_num = bool(_re.search(r":\s*\d+\s+\S", produto))
-    bib = os.path.join(config.RAIZ, "musica", "biblioteca")
-    tem_mus = os.path.isdir(bib) and bool(os.listdir(bib))
-    pesos = (cfg.get("transicoes") or {}).get("pesos") or {}
-    estilo = "cartoon" if "iris" in pesos else "editor"
-    return [
-        {"id": "remotion", "nome": "Motor Remotion", "ativo": rem, "nota": "" if rem else "falta o Node.js nesta maquina: usa o motor atual"},
-        {"id": "gancho", "nome": "Gancho animado", "ativo": tem_num and rem,
-         "nota": "" if tem_num else "o nome do produto nao tem numero para contar"},
-        {"id": "fecho", "nome": "Cartao de fecho", "ativo": rem, "nota": ""},
-        {"id": "batida", "nome": "Corte na batida", "ativo": tem_mus, "nota": "" if tem_mus else "sem biblioteca de musica"},
-        {"id": "musica", "nome": "Musica automatica", "ativo": tem_mus, "nota": "" if tem_mus else "sem biblioteca de musica"},
-        {"id": "sfx", "nome": "SFX no pico", "ativo": True, "nota": ""},
-        {"id": "emojis", "nome": "Emojis animados", "ativo": True, "nota": "nas palavras-chave"},
-        {"id": "selos", "nome": "Selos de confianca", "ativo": True, "nota": "garantia, WhatsApp, compra segura"},
-        {"id": "recorte", "nome": "Musica recortada sob a voz", "ativo": True, "nota": ""},
-        {"id": "lenta", "nome": "Camera lenta por IA", "ativo": True, "nota": "clipe curto nao congela"},
-        {"id": "transicoes", "nome": f"70% com transicao ({estilo})", "ativo": True, "nota": ""},
-    ]
-
-
-def analisar_base(caminho):
-    if not caminho or not os.path.exists(caminho): raise HTTPException(404, "caminho nao existe")
-    an = montagem.analisar_base(caminho)
-    return {"pasta": an["pasta"], "clipes": len(an["clipes"]), "duracao": round(an["duracao"], 1),
-            "arquivos": [{"nome": os.path.basename(c["arquivo"]), "caminho": c["arquivo"], "duracao": round(c["duracao"], 1)}
-                         for c in an["clipes"]]}
+def _conexoes():
+    return {"minimax": bool(os.environ.get("MINIMAX_API_KEY")),
+            "motor": os.path.isdir(os.path.join(producao.REMOTION, "node_modules", "@remotion", "cli")) or bool(shutil.which("npm")),
+            "claude": bool(shutil.which("claude"))}
 
 
 def miniatura(caminho, largura=360, t=None):
@@ -210,7 +79,7 @@ def miniatura(caminho, largura=360, t=None):
         from PIL import Image
         with Image.open(caminho) as im:
             im = im.convert("RGB"); im.thumbnail((largura, largura * 4)); im.save(destino, "JPEG", quality=82)
-    if not os.path.exists(destino): raise HTTPException(500, "nao consegui gerar a miniatura")
+    if not os.path.exists(destino): raise HTTPException(500, "não consegui gerar a miniatura")
     return destino
 
 
@@ -220,29 +89,59 @@ def dentro(caminho):
 
 
 # ── app ───────────────────────────────────────────────────────────────────────
-class Importar(BaseModel):
+class Novo(BaseModel):
     nome: str
-    produto: str = ""
-    texto: str
+    formato: str = "16:9"
+    duracao_alvo: int = 40
+    destino: str = ""
+    briefing: dict = {}
+    modo: str = "guiado"
 
 
-class Base(BaseModel):
-    caminho: str
+class Amostra(BaseModel):
+    voz: str
+    velocidade: float = 1.0
 
 
 class Produzir(BaseModel):
-    campanha: str
-    ids: list = []
-    refazer: bool = False
-    workers: int = 2
+    tarefa: str = "previa"
 
 
 class Caminho(BaseModel):
     caminho: str
 
 
+def _amostra(voz, velocidade, texto=None, pasta=None):
+    """Amostra de voz sem derrubar nada: falha da MiniMax (rede, chave, voz) vira erro legivel na tela."""
+    try:
+        return producao.amostra_voz(voz, velocidade, texto, pasta)
+    except BaseException as e:                                   # noqa: BLE001 (SystemExit inclusive)
+        raise HTTPException(502, f"a MiniMax não gerou a amostra: {str(e)[:200]}")
+
+
+EDITAVEIS = {"nome", "formato", "duracao_alvo", "destino", "modo", "briefing", "copy", "voz", "roteiro", "musica"}
+
+
+def _editar(pid, novo):
+    novo = {k: v for k, v in novo.items() if k in EDITAVEIS}
+    if "formato" in novo and novo["formato"] not in projeto.FORMATOS: raise HTTPException(400, "formato inválido")
+
+    def ed(p):
+        antes_copy = p.get("copy", "")
+        for k, v in novo.items():
+            if k in ("briefing", "voz", "roteiro", "musica") and isinstance(v, dict): p.setdefault(k, {}).update(v)
+            else: p[k] = v
+        if "copy" in novo and (novo["copy"] or "").strip() != (antes_copy or "").strip():
+            projeto.registrar(p, f"Copy salva · {len(projeto.palavras_da_copy(novo['copy']))} palavras")
+        if "voz" in novo and novo["voz"].get("id"):
+            projeto.registrar(p, f"Voz escolhida: {novo['voz'].get('nome') or novo['voz']['id']} · {float(p['voz'].get('velocidade', 1.0)):.2f}×")
+        if "roteiro" in novo: projeto.registrar(p, f"Roteiro: {projeto.MODELOS.get(p['roteiro'].get('modelo'), '—')}")
+        if "briefing" in novo: projeto.registrar(p, "Briefing atualizado")
+    projeto.alterar(pid, ed)
+
+
 def criar_app(token, hosts):
-    app = FastAPI(title="edivid", docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title="autotube", docs_url=None, redoc_url=None, openapi_url=None)
 
     @app.middleware("http")
     async def portao(request: Request, call_next):
@@ -259,119 +158,114 @@ def criar_app(token, hosts):
 
     @app.get("/api/estado")
     def estado():
-        ui = _ui()
-        aberta = ui.get("campanha")
-        if aberta and not os.path.isdir(_camp.pasta(aberta)): aberta = None
-        return {"campanha": aberta, "campanhas": lista_campanhas(), "rodando": PRODUTOR.rodando,
-                "produzindo": PRODUTOR.campanha if PRODUTOR.rodando else None, "parando": PRODUTOR.parar.is_set(),
-                "etapas": PRODUTOR.etapas, "registro": PRODUTOR.registro[:40],
-                "minimax": bool(os.environ.get("MINIMAX_API_KEY")), "transicoes": sorted(transicoes.CATALOGO),
-                "cartoon": list(transicoes.CARTOON)}
+        return {"versao": VERSAO, "projetos": projeto.lista(), "produtor": producao.PRODUTOR.estado(), "conexoes": _conexoes(),
+                "padrao": config.padrao(config.ler_json(AJUSTES, {}) or {})["tts"]}
 
-    @app.get("/api/campanhas")
-    def campanhas():
-        return lista_campanhas()
-
-    @app.get("/api/campanhas/{nome}")
-    def campanha(nome: str):
-        return detalhe_campanha(nome)
-
-    @app.post("/api/campanhas/{nome}/abrir")
-    def abrir(nome: str):
-        carregar(nome); _salvar_ui(campanha=nome); return {"ok": True}
-
-    @app.post("/api/campanhas/importar")
-    def importar(b: Importar):
-        import tempfile
-        with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False, encoding="utf-8") as f:
-            f.write(b.texto); tmp = f.name
+    @app.post("/api/projetos")
+    def criar(b: Novo):
         try:
-            camp, pasta = _camp.importar(tmp, b.nome, b.produto)
-        finally:
-            os.remove(tmp)
-        nome = os.path.basename(pasta); _salvar_ui(campanha=nome)
-        return {"nome": nome, "criativos": len(camp["criativos"]), "regra": _camp.validar(camp)}
+            p = projeto.criar(b.nome, b.formato, b.duracao_alvo, b.destino, b.briefing, b.modo)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        return {"id": p["id"]}
 
-    @app.post("/api/campanhas/{nome}/base")
-    def base(nome: str, b: Base):
-        info = analisar_base(b.caminho)
-        p = os.path.join(_camp.pasta(nome), "campanha.json")
-        c = config.ler_json(p); c["base"] = os.path.abspath(b.caminho); config.escrever_json(p, c)
-        return info
+    @app.get("/api/projetos/{pid}")
+    def ver(pid: str):
+        return detalhe(pid)
 
-    @app.get("/api/base/analisar")
-    def get_base(caminho: str):
-        return analisar_base(caminho)
+    @app.post("/api/projetos/{pid}")
+    async def editar(pid: str, request: Request):
+        _carregar(pid)
+        if producao.PRODUTOR.rodando and producao.PRODUTOR.pid == pid:
+            novo = await request.json()
+            if any(k in novo for k in ("copy", "voz", "formato", "roteiro")):
+                raise HTTPException(409, "espere o trabalho atual terminar para mudar copy, voz, formato ou roteiro")
+        else:
+            novo = await request.json()
+        _editar(pid, novo)
+        return detalhe(pid)
 
-    @app.post("/api/campanhas/{nome}/ajustes")
-    async def ajustes(nome: str, request: Request):
-        novo = await request.json()
-        p = os.path.join(_camp.pasta(nome), "campanha.json")
-        c = config.ler_json(p); aj = c.setdefault("ajustes", {})
-        if isinstance(novo.get("publicar"), dict):          # destino no GitHub mora fora de "ajustes"
-            c.setdefault("publicar", {}).update(novo.pop("publicar"))
-        for k, v in novo.items():
-            if isinstance(v, dict): aj.setdefault(k, {}).update(v)
-            elif v is None: aj.pop(k, None)
-            else: aj[k] = v
-        config.escrever_json(p, c)
-        return {"ok": True, "ajustes": aj}
+    @app.post("/api/projetos/{pid}/amostra")
+    def amostra(pid: str, b: Amostra):
+        p = _carregar(pid)
+        arq, dur = _amostra(b.voz, b.velocidade, producao.trecho_amostra(p.get("copy")), os.path.join(projeto.pasta(pid), "amostras"))
+        rel = os.path.relpath(arq, projeto.pasta(pid))
+        projeto.alterar(pid, lambda q: q.setdefault("amostras", {}).__setitem__(f"{b.voz}|{b.velocidade:.2f}", rel))
+        return {"caminho": arq, "duracao": round(dur, 1)}
 
-    @app.post("/api/produzir")
-    def produzir(b: Produzir):
-        PRODUTOR.iniciar(b.campanha, b.ids or None, b.refazer, b.workers)
+    @app.post("/api/projetos/{pid}/produzir")
+    def produzir(pid: str, b: Produzir):
+        if b.tarefa not in ("narrar", "previa", "final", "tudo"): raise HTTPException(400, "tarefa inválida")
+        p = _carregar(pid)
+        if not (p.get("copy") or "").strip(): raise HTTPException(400, "escreva a copy antes de produzir")
+        try:
+            producao.PRODUTOR.iniciar(pid, b.tarefa)
+        except producao.Ocupado as e:
+            raise HTTPException(409, str(e))
         return {"ok": True}
-
-    @app.post("/api/publicar")
-    def post_publicar(b: Caminho):
-        """b.caminho = nome da campanha. Roda em segundo plano; o resultado aparece na atividade."""
-        if PRODUTOR.rodando: raise HTTPException(409, "espere a producao terminar para publicar")
-        from . import publicar as _pub
-        carregar(b.caminho)
-        def rodar():
-            try: _pub.publicar(b.caminho, log=PRODUTOR.log)
-            except BaseException as e:                       # noqa: BLE001
-                PRODUTOR.log(f"⚠ publicar falhou: {e}")
-        threading.Thread(target=rodar, daemon=True).start()
-        return {"ok": True}
-
-    @app.post("/api/nova-narracao")
-    async def nova_narracao(request: Request):
-        """Outra leitura da MiniMax para UM criativo (o ouvido do operador achou a entonacao ruim)."""
-        b = await request.json()
-        camp = carregar(b["campanha"])
-        cri = next((c for c in camp["criativos"] if c["id"] == b["id"]), None)
-        if not cri: raise HTTPException(404, "criativo nao existe")
-        pasta = os.path.join(camp["_pasta"], "saida", f"{cri['id']}-{config.slug(cri['angulo'], 30)}")
-        arq = os.path.join(pasta, "tts_take.json")
-        take = int((config.ler_json(arq) or {}).get("take", 0)) + 1
-        os.makedirs(pasta, exist_ok=True); config.escrever_json(arq, {"take": take})
-        PRODUTOR.iniciar(b["campanha"], [cri["id"]], refazer=True, workers=1)
-        PRODUTOR.log(f"[{cri['id']}] nova narracao pedida (leitura {take})")
-        return {"ok": True, "take": take}
 
     @app.post("/api/parar")
     def parar():
-        PRODUTOR.parar.set(); PRODUTOR.log("parada pedida: termina o criativo atual e para")
+        producao.PRODUTOR.parar.set()
+        if producao.PRODUTOR.pid: projeto.log(producao.PRODUTOR.pid, "Parada pedida")
         return {"ok": True}
+
+    @app.get("/api/vozes")
+    def vozes(atualizar: int = 0):
+        try:
+            return producao.vozes(bool(atualizar))
+        except Exception as e:                                   # noqa: BLE001 (sem rede / sem chave)
+            raise HTTPException(502, f"não consegui listar as vozes da MiniMax: {e}")
+
+    @app.post("/api/vozes/amostra")
+    def amostra_livre(b: Amostra):
+        arq, dur = _amostra(b.voz, b.velocidade)
+        return {"caminho": arq, "duracao": round(dur, 1)}
+
+    @app.get("/api/musicas")
+    def musicas():
+        return [dict(f, caminho=musica.arquivo(f) if os.path.exists(musica.arquivo(f)) else None) for f in musica.catalogo()]
+
+    @app.get("/api/sfx")
+    def efeitos():
+        cat = config.ler_json(os.path.join(config.SFX_DIR, "livre", "catalogo.json"), {}) or {}
+        out = []
+        for e in cat.get("efeitos", []):
+            arq = os.path.join(config.SFX_DIR, "livre", f"{e['nome']}.mp3")
+            out.append(dict(e, caminho=arq if os.path.exists(arq) else None))
+        return out
+
+    @app.get("/api/ajustes")
+    def ver_ajustes():
+        c = config.padrao(config.ler_json(AJUSTES, {}) or {})
+        return {"tts": {k: c["tts"][k] for k in ("voz", "velocidade", "modelo")}, "render": c["render"], "audio": c["audio"],
+                "pastas": {"projetos": config.PROJETOS_DIR}}
+
+    @app.post("/api/ajustes")
+    async def salvar_ajustes(request: Request):
+        novo = await request.json()
+        aj = config.ler_json(AJUSTES, {}) or {}
+        for sec in ("tts", "render", "audio"):
+            if isinstance(novo.get(sec), dict): aj.setdefault(sec, {}).update(novo[sec])
+        config.escrever_json(AJUSTES, aj)
+        return ver_ajustes()
 
     @app.post("/api/abrir-pasta")
     def abrir_pasta(b: Caminho):
         alvo = b.caminho if os.path.isdir(b.caminho) else os.path.dirname(b.caminho)
-        if not dentro(os.path.join(alvo, "x")) and not os.path.isdir(alvo): raise HTTPException(404, "pasta nao existe")
+        if not (os.path.isdir(alvo) and (dentro(os.path.join(alvo, "x")))): raise HTTPException(404, "pasta fora da ferramenta")
         if os.name == "nt": os.startfile(alvo)                   # noqa: S606 (abre o Explorer na pasta)
         return {"ok": True}
 
     @app.get("/api/midia")
     def midia(caminho: str):
-        if not (os.path.isfile(caminho) and dentro(caminho)): raise HTTPException(404, "midia fora das pastas da ferramenta")
+        if not (os.path.isfile(caminho) and dentro(caminho)): raise HTTPException(404, "mídia fora das pastas da ferramenta")
         return FileResponse(caminho)
 
     @app.get("/api/miniatura")
     def mini(caminho: str, w: int = 360, t: float = None):
-        if not os.path.isfile(caminho): raise HTTPException(404, "arquivo nao existe")
-        return FileResponse(miniatura(caminho, max(80, min(w, 1080)), t), media_type="image/jpeg",
-                            headers={"Cache-Control": "max-age=86400"})
+        if not (os.path.isfile(caminho) and dentro(caminho)): raise HTTPException(404, "arquivo fora das pastas da ferramenta")
+        return FileResponse(miniatura(caminho, max(80, min(w, 1280)), t), media_type="image/jpeg", headers={"Cache-Control": "max-age=86400"})
 
     if os.path.isdir(PAINEL):
         @app.get("/{resto:path}")
@@ -444,7 +338,7 @@ def rodar(porta=8801, janela=True):
     # ⭐ instancia UNICA: se a ferramenta ja' esta' rodando, so' traz a janela de volta (nao abre outra)
     url = ja_aberta()
     if url:
-        print(f"a ferramenta ja' esta' aberta: {url}")
+        print(f"o AutoTube ja' esta' aberto: {url}")
         if janela: abrir_janela(url)
         return
     porta = porta_livre(porta)

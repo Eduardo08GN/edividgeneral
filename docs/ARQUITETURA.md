@@ -1,80 +1,39 @@
-# Arquitetura
+# Arquitetura do AutoTube
 
-## Linha mestra
-
-1. **Claude como orquestrador com um documento-motor.** A ideia veio do vídeo de referência sobre
-   automação no estilo "engine". Nada aqui se conecta ao Higgsfield.
-   - O `CLAUDE.md` é o motor: o Claude Code lê o arquivo e pergunta só o que falta.
-   - Depois roda o pipeline inteiro sozinho.
-2. **Engenharia herdada do `ow_agente`**, usado só para consulta (nada foi alterado lá):
-   - ffmpeg numa passada só;
-   - legenda em PNG (Pillow) sobreposta com `overlay enable=between`;
-   - a grafia da copy aplicada sobre os tempos do whisper;
-   - estado em disco idempotente;
-   - um QA que avisa em vez de falhar calado.
-
-## Pipeline de um criativo
+## Peças
 
 ```
-copy (campanha.json)
-  │  tts.narrar ─────────── MiniMax T2A v2 (speech-2.6-hd, Portuguese_ChattyGirl)
-  │                           · cache por conteúdo (.cache/tts)
-  │                           · ajusta a velocidade (0,9–1,2) se sair longe do tempo-alvo
-  ▼
-narracao.wav (48 kHz, sem silêncio nas pontas)
-  │  alinhar.alinhar ────── faster-whisper small (palavra a palavra) + casar_texto (grafia da copy)
-  ▼
-palavras [(texto, t0, t1)]
-  │  montagem.planejar ──── cartões de legenda (equilibrados, nunca atravessam frase)
-  │                         cortes casados com o início dos cartões (1,6–3,4 s)
-  │                         planos do vídeo base (rotação por semente + zoom punch-in)
-  │                         selo de preço · CTA no "clique" · SFX por regra · música por perfil
-  ▼
-plano.json  (dados puros: dá para conferir sem renderizar)
-  │  render.renderizar ──── 1 ffmpeg: planos → concat → legendas/selo/CTA (+ setas pulando)
-  │                         áudio: voz + música (sidechain) + SFX (adelay) → loudnorm −14 LUFS
-  ▼
-final.mp4 (1080×1920, 30 fps, H.264 CRF 19, AAC 192k)  →  _entregues/  +  player.html
+painel/ (React)  ──HTTP 127.0.0.1:8801──►  editor/servidor.py (FastAPI, senha por sessão)
+                                               │
+                         editor/projeto.py ◄───┤  estado de cada projeto (projetos/<id>/projeto.json)
+                         editor/producao.py ◄──┘  um trabalho por vez, em segundo plano
+                               │
+   copy ──► tts.py (MiniMax) ──► alinhar.py (faster-whisper + alinhamento forçado MMS_FA) ──► palavras.json
+                               │
+                               ├─ roteiro "legenda": props (frases, trilha cortada na batida, efeitos) ─┐
+                               └─ roteiro "proprio": projetos/<id>/cenas → remotion/src/_projetos/<id> ─┤
+                                                                                                         ▼
+                               remotion/ (Node) ── render com porta e public-dir próprios ──► bruto.mp4
+                                                                                                         │
+                               loudnorm em 2 passadas (−14 LUFS, pico −1,5) ──► versoes/vN.mp4 + folha 1 quadro/s
 ```
 
 ## Módulos
 
 | arquivo | papel |
 |---|---|
-| `edt.py` | CLI |
-| `editor/config.py` | `.env`; `config/padrao.json` mais os `ajustes` da campanha mais as variáveis `EDT_*`; `run()` do ffmpeg |
-| `editor/campanha.py` | importa o mapa de ângulos (texto) e valida a regra 5×5 |
-| `editor/tts.py` | MiniMax T2A v2 (com retry e cache), Kokoro local como reserva, lista de vozes |
-| `editor/alinhar.py` | whisper (faster-whisper ou whisper.cpp) e `casar_texto` |
-| `editor/legendas.py` | 11 estilos (o 11 LOWTICKET é o padrão), pílula CTA, seta, selo de preço |
-| `editor/montagem.py` | análise do base (cortes de cena), cartões, linha do tempo, plano |
-| `editor/sfx.py` | regras de SFX (abertura, gatilho por palavra, CTA, cortes) e sync do Drive |
-| `editor/musica.py` | perfil emocional do criativo e escolha da faixa sem repetir no público |
-| `editor/render.py` | o grafo do ffmpeg |
-| `editor/lote.py` | orquestra a campanha: paralelo entre públicos, idempotente, QA |
-| `editor/player.py` | página de revisão |
+| `editor/projeto.py` | criar, carregar, salvar (com trava), etapas derivadas, chave da narração (copy+voz+velocidade) |
+| `editor/producao.py` | amostra de voz, narração, frases da legenda, render Remotion com progresso, loudnorm, folha de contato, `Produtor` (fila de 1) |
+| `editor/servidor.py` | rotas do painel; mídia só de dentro de `projetos/`, `musica/`, `sfx/` e das amostras |
+| `editor/musica.py` | catálogo livre, batidas e tom (librosa), melhor janela da faixa começando numa batida |
+| `editor/tts.py`, `alinhar.py` | herdados do editingtool (velocidade não linear, cache por texto+voz, alinhamento forçado) |
+| `editor/sfx.py`, `transicoes.py`, `camera_lenta.py`, `emojis.py`, `mixagem.py`, `formato.py`, `qa_entrega.py`, `limpar.py` | herdados, genéricos; ainda não usados pelo AutoTube (motor de cenas, fase 4) |
+| `remotion/src/modelos/Legenda.tsx` | modelo genérico "Legenda cinética" |
+| `remotion/src/base.tsx` | peças comuns (Palavra no tempo da fala, grade de pontos, HUD) |
 
-## Por que cada decisão
+## Fases
 
-- **Plano separado do render:** dá para testar regras sem ffmpeg e refazer só o render.
-- **`-ss/-t` por plano em vez de `split`:** a busca é rápida e o ffmpeg não guarda frames em memória.
-- **Corte no início do cartão:** a troca de imagem acompanha a troca de frase, como numa edição feita à mão.
-- **Último plano fixo no fim do base:** é onde costuma estar o "money shot" (o leque de cards).
-- **Música em sequência dentro do público e em paralelo entre públicos:** o resultado é
-  determinístico e 5 criativos do mesmo conjunto nunca repetem a faixa.
-- **Selo de preço automático:** quando a voz diz "reais", o número anterior vira **SÓ R$ N**.
-- **Loudnorm em −14 LUFS:** é o padrão de Reels e do feed, então nenhum criativo sai mais baixo que os outros.
-
-## Pool de recursos (todos gratuitos)
-
-| tipo | fonte | licença |
-|---|---|---|
-| SFX | Drive do time (`sfx/catalogo.json`): 16 liberados, 21 bloqueados (memes e marcas) | uso livre; bloqueados por risco no Rights Manager |
-| música | Meta Sound Collection, 40 faixas instrumentais (`musica/catalogo.json`) | livre em apps da Meta, inclusive anúncios |
-| fontes | Montserrat, Poppins, Anton, Bebas, Archivo, Luckiest Guy (`fontes/`) | OFL / Apache 2.0 |
-| voz | MiniMax (pago); Kokoro-82M local, Apache 2.0, só para teste | — |
-| transcrição | faster-whisper / whisper.cpp locais | MIT |
-
-Para ampliar o pool: Pixabay (SFX e música, comercial sem crédito), Freesound **somente CC0**,
-Mixkit, Kenney (CC0) e Sonniss GDC bundle. Evite BBC SFX (não comercial) e qualquer fonte que
-exija crédito.
+1. **Interface + projeto** (2026-10-06): as 6 etapas, voz pelo ouvido, narração, Legenda cinética, cenas próprias, versões.
+2. **Captura**: gravar uma janela (só filmando), capturar um site escondendo marcas, baixar vídeos de uma página, importar do HD.
+3. **Claude no fluxo** (`claude -p`): 10 copys com ângulos diferentes, roteiro de cenas, pedidos de ajuste ("troque a música").
+4. **Motor de cenas**: as 11 cenas do explicativo viram modelos reutilizáveis que o Claude escolhe e preenche.

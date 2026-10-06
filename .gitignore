@@ -3,9 +3,7 @@
 __pycache__/
 *.pyc
 sfx/pool/
-musica/biblioteca/
-campanhas/*/saida/
-campanhas/*/base/
+projetos/
 *.mp4
 *.wav
 *.mp3

@@ -1,24 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ler, type Campanha, type Estado } from "./api";
+import { ler, type Estado, type Projeto as TProjeto } from "./api";
 import { useRota } from "./rota";
 import { Lateral } from "./componentes/Lateral";
 import { Toast, type Aviso } from "./componentes/base";
-import { Painel } from "./telas/Painel";
-import { Criativos } from "./telas/Criativos";
-import { NovaCampanha } from "./telas/NovaCampanha";
+import { Projetos } from "./telas/Projetos";
+import { NovoVideo } from "./telas/NovoVideo";
+import { Projeto } from "./telas/Projeto";
+import { Biblioteca } from "./telas/Biblioteca";
 import { Ajustes } from "./telas/Ajustes";
 
 export interface Ctx {
   estado: Estado;
-  camp: Campanha | null;
-  recarregar: () => void;
+  recarregar: () => Promise<void>;
   avisar: (texto: string, tom?: "ok" | "erro") => void;
 }
 
 // ⭐ o painel le' o servidor de tempos em tempos: rapido enquanto produz, devagar parado
-function useServidor() {
+function useServidor(idAberto?: string) {
   const [estado, setEstado] = useState<Estado | null>(null);
-  const [camp, setCamp] = useState<Campanha | null>(null);
+  const [proj, setProj] = useState<TProjeto | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const vivo = useRef(true);
   const puxar = useCallback(async () => {
@@ -26,40 +26,45 @@ function useServidor() {
       const e = await ler<Estado>("/api/estado");
       if (!vivo.current) return;
       setEstado(e); setErro(null);
-      if (e.campanha) setCamp(await ler<Campanha>(`/api/campanhas/${encodeURIComponent(e.campanha)}`));
-      else setCamp(null);
+      if (idAberto) setProj(await ler<TProjeto>(`/api/projetos/${encodeURIComponent(idAberto)}`));
     } catch (x) { if (vivo.current) setErro((x as Error).message); }
-  }, []);
+  }, [idAberto]);
   useEffect(() => {
-    vivo.current = true; puxar();
-    const t = window.setInterval(puxar, estado?.rodando ? 1500 : 4000);
-    return () => { vivo.current = false; window.clearInterval(t); };
-  }, [puxar, estado?.rodando]);
-  return { estado, camp, erro, puxar };
+    vivo.current = true; setProj(null); puxar();
+    return () => { vivo.current = false; };
+  }, [puxar]);
+  const rodando = estado?.produtor.rodando;
+  useEffect(() => {
+    const t = window.setInterval(puxar, rodando ? 1200 : 4000);
+    return () => window.clearInterval(t);
+  }, [puxar, rodando]);
+  return { estado, proj, erro, puxar };
 }
 
 export function App() {
   const rota = useRota();
-  const { estado, camp, erro, puxar } = useServidor();
+  const { estado, proj, erro, puxar } = useServidor(rota.tela === "projeto" ? rota.id : undefined);
   const [aviso, setAviso] = useState<Aviso | null>(null);
   const avisar = useCallback((texto: string, tom: "ok" | "erro" = "ok") => setAviso({ texto, tom, id: Date.now() }), []);
 
   if (!estado) {
     return (
       <div className="tela"><div className="panel vazio">
-        <h2>{erro ? "Não consegui falar com a ferramenta" : "Abrindo…"}</h2>
-        {erro && <p>Feche esta janela e abra de novo com <code>python edt.py painel</code>. ({erro})</p>}
+        <h2>{erro ? "Não consegui falar com o AutoTube" : "Abrindo…"}</h2>
+        {erro && <p>Feche esta janela e abra de novo pelo atalho AutoTube. ({erro})</p>}
       </div></div>
     );
   }
-  const ctx: Ctx = { estado, camp, recarregar: puxar, avisar };
+  const ctx: Ctx = { estado, recarregar: puxar, avisar };
   return (
-    <div className={`app${camp?.efetivo?.turbo ? " turbo" : ""}`}>
+    <div className="app">
       <Lateral ctx={ctx} rota={rota} />
       <main>
-        {rota.tela === "painel" && <Painel ctx={ctx} />}
-        {rota.tela === "criativos" && <Criativos ctx={ctx} aberto={rota.criativo} />}
-        {rota.tela === "nova" && <NovaCampanha ctx={ctx} />}
+        {rota.tela === "projetos" && <Projetos ctx={ctx} />}
+        {rota.tela === "novo" && <NovoVideo ctx={ctx} />}
+        {rota.tela === "projeto" && (proj && proj.id === rota.id ? <Projeto ctx={ctx} p={proj} etapa={rota.etapa} /> :
+          <div className="tela"><div className="panel vazio"><h2>{erro ? "Projeto não encontrado" : "Abrindo o projeto…"}</h2></div></div>)}
+        {rota.tela === "biblioteca" && <Biblioteca ctx={ctx} />}
         {rota.tela === "ajustes" && <Ajustes ctx={ctx} />}
       </main>
       <Toast aviso={aviso} fechar={() => setAviso(null)} />

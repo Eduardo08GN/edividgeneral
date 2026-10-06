@@ -1,0 +1,75 @@
+{
+ "_leia": "Trilhas LIVRES para o AutoTube. Arquivos em musica/livre/<id>.mp3 (fora do git): python edt.py musica sync.",
+ "faixas": [
+  {
+   "id": "mixkit-623",
+   "titulo": "Deep Urban",
+   "bpm": 123.0,
+   "clima": "tech, corporativo, energia media-alta",
+   "fonte": "Mixkit",
+   "url": "https://assets.mixkit.co/music/623/623.mp3",
+   "pagina": "https://mixkit.co/free-stock-music/",
+   "licenca": "Mixkit Stock Music Free License (uso comercial, sem credito): https://mixkit.co/license/#musicFree"
+  },
+  {
+   "id": "mixkit-1167",
+   "titulo": "Close Up",
+   "bpm": 103.4,
+   "clima": "suave, corporativo",
+   "fonte": "Mixkit",
+   "url": "https://assets.mixkit.co/music/1167/1167.mp3",
+   "pagina": "https://mixkit.co/free-stock-music/",
+   "licenca": "Mixkit Stock Music Free License (uso comercial, sem credito): https://mixkit.co/license/#musicFree"
+  },
+  {
+   "id": "mixkit-175",
+   "titulo": "Digital Clouds",
+   "bpm": 129.2,
+   "clima": "tech, leve",
+   "fonte": "Mixkit",
+   "url": "https://assets.mixkit.co/music/175/175.mp3",
+   "pagina": "https://mixkit.co/free-stock-music/",
+   "licenca": "Mixkit Stock Music Free License (uso comercial, sem credito): https://mixkit.co/license/#musicFree"
+  },
+  {
+   "id": "mixkit-124",
+   "titulo": "Techno Fest Vibes",
+   "bpm": 123.0,
+   "clima": "techno, energia alta",
+   "fonte": "Mixkit",
+   "url": "https://assets.mixkit.co/music/124/124.mp3",
+   "pagina": "https://mixkit.co/free-stock-music/",
+   "licenca": "Mixkit Stock Music Free License (uso comercial, sem credito): https://mixkit.co/license/#musicFree"
+  },
+  {
+   "id": "mixkit-726",
+   "titulo": "Uplifting Bass",
+   "bpm": 89.1,
+   "clima": "inspirador, graves",
+   "fonte": "Mixkit",
+   "url": "https://assets.mixkit.co/music/726/726.mp3",
+   "pagina": "https://mixkit.co/free-stock-music/",
+   "licenca": "Mixkit Stock Music Free License (uso comercial, sem credito): https://mixkit.co/license/#musicFree"
+  },
+  {
+   "id": "mixkit-140",
+   "titulo": "Cyberpunk City",
+   "bpm": 99.4,
+   "clima": "sintetico, tenso",
+   "fonte": "Mixkit",
+   "url": "https://assets.mixkit.co/music/140/140.mp3",
+   "pagina": "https://mixkit.co/free-stock-music/",
+   "licenca": "Mixkit Stock Music Free License (uso comercial, sem credito): https://mixkit.co/license/#musicFree"
+  },
+  {
+   "id": "mixkit-162",
+   "titulo": "Minimal Techno 01",
+   "bpm": 129.2,
+   "clima": "techno minimal, constante",
+   "fonte": "Mixkit",
+   "url": "https://assets.mixkit.co/music/162/162.mp3",
+   "pagina": "https://mixkit.co/free-stock-music/",
+   "licenca": "Mixkit Stock Music Free License (uso comercial, sem credito): https://mixkit.co/license/#musicFree"
+  }
+ ]
+}

@@ -1,0 +1,156 @@
+{
+ "_leia": "Efeitos LIVRES (Mixkit Free Sound Effects License, uso comercial, sem credito). Arquivos em sfx/livre/<nome>.mp3 (fora do git). 'pico' = instante (s) do ataque principal, medido com librosa: o efeito comeca em (alvo - pico).",
+ "licenca": "https://mixkit.co/license/#sfxFree",
+ "efeitos": [
+  {
+   "nome": "whoosh_rapido",
+   "id": 1492,
+   "url": "https://assets.mixkit.co/active_storage/sfx/1492/1492-preview.mp3",
+   "pico": 1.1
+  },
+  {
+   "nome": "sweep",
+   "id": 166,
+   "url": "https://assets.mixkit.co/active_storage/sfx/166/166-preview.mp3",
+   "pico": 0.31
+  },
+  {
+   "nome": "whoosh_pop",
+   "id": 3005,
+   "url": "https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3",
+   "pico": 0.06
+  },
+  {
+   "nome": "tech_slide",
+   "id": 3120,
+   "url": "https://assets.mixkit.co/active_storage/sfx/3120/3120-preview.mp3",
+   "pico": 0.14
+  },
+  {
+   "nome": "sweep_curto",
+   "id": 175,
+   "url": "https://assets.mixkit.co/active_storage/sfx/175/175-preview.mp3",
+   "pico": 0.45
+  },
+  {
+   "nome": "pop_longo",
+   "id": 2358,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3",
+   "pico": 0.06
+  },
+  {
+   "nome": "pop_seco",
+   "id": 2364,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2364/2364-preview.mp3",
+   "pico": 0.05
+  },
+  {
+   "nome": "pop_ui",
+   "id": 2356,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2356/2356-preview.mp3",
+   "pico": 0.09
+  },
+  {
+   "nome": "clique",
+   "id": 1109,
+   "url": "https://assets.mixkit.co/active_storage/sfx/1109/1109-preview.mp3",
+   "pico": 0.05
+  },
+  {
+   "nome": "clique_duplo",
+   "id": 275,
+   "url": "https://assets.mixkit.co/active_storage/sfx/275/275-preview.mp3",
+   "pico": 0.14
+  },
+  {
+   "nome": "tech_select",
+   "id": 3124,
+   "url": "https://assets.mixkit.co/active_storage/sfx/3124/3124-preview.mp3",
+   "pico": 0.0
+  },
+  {
+   "nome": "check",
+   "id": 1120,
+   "url": "https://assets.mixkit.co/active_storage/sfx/1120/1120-preview.mp3",
+   "pico": 0.14
+  },
+  {
+   "nome": "bleep_ok",
+   "id": 2520,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2520/2520-preview.mp3",
+   "pico": 0.2
+  },
+  {
+   "nome": "tech_ok",
+   "id": 3116,
+   "url": "https://assets.mixkit.co/active_storage/sfx/3116/3116-preview.mp3",
+   "pico": 0.07
+  },
+  {
+   "nome": "ui_zoom",
+   "id": 2620,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2620/2620-preview.mp3",
+   "pico": 0.3
+  },
+  {
+   "nome": "processando",
+   "id": 3122,
+   "url": "https://assets.mixkit.co/active_storage/sfx/3122/3122-preview.mp3",
+   "pico": 1.08
+  },
+  {
+   "nome": "glitch_texto",
+   "id": 2950,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2950/2950-preview.mp3",
+   "pico": 1.32
+  },
+  {
+   "nome": "glitch_eletrico",
+   "id": 2595,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2595/2595-preview.mp3",
+   "pico": 0.35
+  },
+  {
+   "nome": "relogio_rapido",
+   "id": 1063,
+   "url": "https://assets.mixkit.co/active_storage/sfx/1063/1063-preview.mp3",
+   "pico": 1.61
+  },
+  {
+   "nome": "contador",
+   "id": 1054,
+   "url": "https://assets.mixkit.co/active_storage/sfx/1054/1054-preview.mp3",
+   "pico": 0.06
+  },
+  {
+   "nome": "despertador",
+   "id": 1003,
+   "url": "https://assets.mixkit.co/active_storage/sfx/1003/1003-preview.mp3",
+   "pico": 0.38
+  },
+  {
+   "nome": "alarme_beep",
+   "id": 988,
+   "url": "https://assets.mixkit.co/active_storage/sfx/988/988-preview.mp3",
+   "pico": 0.0
+  },
+  {
+   "nome": "impacto_fundo",
+   "id": 1143,
+   "url": "https://assets.mixkit.co/active_storage/sfx/1143/1143-preview.mp3",
+   "pico": 0.59
+  },
+  {
+   "nome": "impacto_intro",
+   "id": 2902,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2902/2902-preview.mp3",
+   "pico": 1.23
+  },
+  {
+   "nome": "logo_impacto",
+   "id": 2900,
+   "url": "https://assets.mixkit.co/active_storage/sfx/2900/2900-preview.mp3",
+   "pico": 4.37
+  }
+ ]
+}

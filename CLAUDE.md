@@ -1,94 +1,83 @@
-# EdiVid (edividgeneral) — editor de vídeo GENÉRICO. Leia isto primeiro.
+# AutoTube (repo edividgeneral) — editor de vídeo genérico. Leia isto primeiro.
 
-> ⛔ **Este repo NÃO é o motor de criativos low ticket.** Ele nasceu em 2026-10-06 como cópia do
-> [editingtool](https://github.com/Eduardo08GN/editingtool) e vai virar uma ferramenta de edições
-> genéricas, com outra arquitetura (a definir com o Eduardo na Fase 2).
-> - O editingtool continua sendo da operação low ticket. **Nunca** faça push para o remote
->   `upstream-editingtool` (o push dele está desligado no git) nem para o repo do time
->   (`lucasmottasilva18-coder/low-ticket`).
-> - **Publicação desligada:** `editor/publicar.py` tem `DESLIGADO = True`; nada sai desta ferramenta.
-> - **Identidade própria:** porta padrão do painel **8801** (o editingtool usa 8791), janela "EdiVid",
->   atalho **`EdiVid.cmd`**, perfil do Edge em `.cache/janela_edge` deste repo.
-> - **Música:** as trilhas da Meta Sound Collection (`musica/biblioteca/`) só valem dentro dos apps da
->   Meta. Vídeo que não vai para a Meta: pergunte ao Eduardo de onde vem a música.
->
-> Até a nova arquitetura chegar, o fluxo abaixo é o herdado do editingtool e continua funcionando.
+O AutoTube faz vídeos de qualquer tipo (YouTube, Instagram, TikTok, WhatsApp, cliente) a partir de uma
+**copy falada**: voz MiniMax, tipografia em movimento ou motion graphics próprios, trilha e efeitos livres.
+O Eduardo não é técnico: quem roda comando, testa e conserta é você. Respostas curtas, em português
+simples, e **mostre o resultado** (vídeo, print), não só a explicação.
 
-Você é o operador desta ferramenta (fluxo herdado do time de low ticket). A pessoa entrega **um vídeo base**
-e **o mapa de ângulos** (ou só o produto e os públicos). Você faz o resto e devolve 20+
-criativos 9:16 prontos para subir na Meta, com legenda queimada, voz MiniMax, SFX e música.
-A pessoa não é técnica: quem roda comando é você.
+> ⛔ **Não é o motor de criativos low ticket.** Este repo nasceu em 2026-10-06 como cópia do
+> [editingtool](https://github.com/Eduardo08GN/editingtool), que continua sendo da operação low ticket.
+> - **Nunca** faça push para o remote `upstream-editingtool` (o push dele está desligado no git) nem para o
+>   repo do time (`lucasmottasilva18-coder/low-ticket`). O pipeline de campanhas 5×5, selos, preço, CTA e a
+>   publicação **foram removidos** daqui.
+> - **Não mexa** em `C:\Users\edlut\editingtool_work`, no `ow_agente` (só consulta) nem no MazyOS/AutomaWeb.
+> - Porta do painel **8801** (o editingtool usa 8791), atalho **`AutoTube.cmd`**, perfil do Edge em `.cache/janela_edge`.
 
-## O fluxo (siga nesta ordem)
+## As 6 etapas de um projeto
 
-1. **Pergunte só o que falta**, de uma vez:
-   - produto e preço (ex.: "Bíblia do Bebê: 70 Cards Lúdicos", R$ 10);
-   - o vídeo base (caminho do .mp4). Ele deve vir limpo: sem legenda e sem narração;
-   - o mapa de ângulos pronto **ou** os públicos para você escrever as copys.
-2. **Copys**: se a pessoa não mandou, escreva seguindo `docs/ANGULOS.md` (regra 5×5, tempos,
-   preço, CTA). Salve em `campanhas/<nome>/copys.txt` no MESMO formato do exemplo
-   `campanhas/biblia-do-bebe/copys.txt` do repo [editingtool](https://github.com/Eduardo08GN/editingtool).
-3. **Importe e valide**:
-   `python edt.py importar campanhas/<nome>/copys.txt --campanha <nome> --produto "..."`
-   Se aparecer aviso de REGRA, corrija a copy (ou mostre à pessoa) antes de gastar TTS.
-4. **Amostra antes do lote**: renderize 1 criativo e mostre à pessoa (SendUserFile, display render):
-   `python edt.py amostra <nome> --base <video.mp4> --id 1.1`
-5. **Lote**: com o ok, produza tudo:
-   `python edt.py produzir <nome> --base <video.mp4> --workers 3`
-6. **Entrega**: mande `campanhas/<nome>/saida/player.html` (grade por público, com avisos de QA)
-   e diga onde estão os MP4: `campanhas/<nome>/saida/_entregues/`.
-   Se algum criativo tiver aviso (fala divergente, CTA não ouvido, duração fora), mostre-o.
+`projetos/<id>/projeto.json` guarda tudo; o estado de cada etapa é **derivado** (`editor/projeto.py`).
 
-## A interface (o jeito normal de operar)
+| etapa | o que é | onde |
+|---|---|---|
+| 1. Briefing | o que é o vídeo, para quem, objetivo, tom, referências, formato, duração, destino | tela Novo vídeo / Briefing |
+| 2. Copy | o texto falado. **A copy é sagrada**: vai literal para a voz e para a tela | Copy (fase 3: o Claude gera 10 opções) |
+| 3. Voz | voz MiniMax escolhida **pelo ouvido** (amostras com o começo da copy) e velocidade | Voz |
+| 4. Material | janelas gravadas, sites capturados, vídeos, imagens | Material (fase 2: captura pela própria ferramenta) |
+| 5. Roteiro | modelo `legenda` (Legenda cinética, serve para tudo) ou `proprio` (cenas Remotion escritas para o vídeo) + trilha | Roteiro |
+| 6. Produção | prévia (meia resolução) e versão final: Remotion → loudnorm −14 LUFS → `versoes/vN.mp4` + folha 1 quadro/s | Produção |
 
-Dois cliques em **`EdiVid.cmd`** (ou `python edt.py painel`) abre a janela:
-**Painel** (produzir/parar, progresso, atividade, criativos por publico) · **Criativos** (filtros,
-player, refazer um so') · **Nova campanha** (colar o mapa de angulos, escolher a pasta de clipes) ·
-**Ajustes** da campanha (voz, modelo 1/2/alternar, estilo de transicao, musica, SFX).
-Codigo: `editor/servidor.py` (FastAPI, so' 127.0.0.1, senha por sessao) + `painel/` (React/Vite;
-`npm run build` gera `painel/dist`, que vai no git para ninguem precisar de Node).
+Modos: **Guiado** (para em cada escolha) e **Automático** (botão "Produzir tudo": narra se precisar e faz a final).
 
-## Motor de render (Ajustes → "Motor de render")
+## A interface (o jeito normal de usar)
 
-- **Remotion** (padrao desde 2026-10-03, o operador achou "bem melhor"): legenda com a palavra falada
-  pulando, titulo/selo/CTA animados com mola, transicoes cartoon. `remotion/` (Node; a ferramenta roda
-  `npm install` sozinha na primeira vez). ~2-3 min por criativo.
-- **Atual (ffmpeg)**: o original, ~1 min por criativo.
-Os dois leem o MESMO `plano.json` (cortes, voz, musica, SFX). Licenca do Remotion: gratis ate' 3 pessoas
-no time; acima disso, plano "Automators" (US$ 0,01/render, minimo US$ 100/mes).
+Dois cliques em **`AutoTube.cmd`** (ou `python edt.py painel`) abre a janela única: **Projetos**, **Novo vídeo**,
+**Projeto** (as 6 etapas + player + "Agora há pouco"), **Biblioteca** (vozes, trilhas, efeitos) e **Ajustes**.
+Código: `editor/servidor.py` (FastAPI, só 127.0.0.1, senha por sessão, instância e janela únicas) + `painel/`
+(React/Vite; `npm run build` gera `painel/dist`, que vai no git).
+⛔ Dentro de uma rota do servidor **nunca** deixe escapar `SystemExit`: ele derruba o servidor inteiro (aconteceu
+em 2026-10-06). Erro de uso na rota = `HTTPException`; o `SystemExit` do motor só roda no trabalho em segundo plano.
 
-## Onde ficam os videos
-
-`campanhas/<nome>/saida/_entregues/P<n>-<publico>/<id>-<angulo>/P<n>_<id>_<angulo>_<dur>s.mp4`
-— uma pasta por angulo; variacoes futuras do mesmo angulo caem nela.
-
-## Comandos
+## Comandos (para você, quando precisar)
 
 | para quê | comando |
 |---|---|
-| importar mapa de ângulos | `python edt.py importar <txt> --campanha <nome>` |
-| conferir a regra | `python edt.py validar <nome>` |
-| 1 criativo | `python edt.py amostra <nome> --base <mp4> --id 2.3` |
-| vários / todos | `python edt.py produzir <nome> --base <mp4> [--so 1.1,2.3] [--workers 3]` |
-| ver a música que cada um usaria | `python edt.py musica <nome>` |
-| listar vozes MiniMax | `python edt.py vozes --filtro portug` |
-| estado do pool de SFX / baixar do Drive | `python edt.py sfx` / `python edt.py sfx sync` |
-| refazer o player | `python edt.py player <nome>` |
-| achar a voz MiniMax mais parecida com um vídeo | `python ferramentas/voz_parecida.py <video_ou_audio>` |
+| abrir a interface | `python edt.py painel` |
+| listar projetos | `python edt.py projetos` |
+| projeto novo pela linha de comando | `python edt.py novo "Nome" --formato 9:16 --copy texto.txt --voz <id>` |
+| narrar / renderizar | `python edt.py narrar <id>` · `python edt.py render <id> [--final]` |
+| vozes da MiniMax | `python edt.py vozes --filtro portug` |
+| baixar as trilhas livres do catálogo | `python edt.py musica sync` |
+| testes | `python tests/test_basico.py` |
 
-Base com texto queimado (só em emergência): `--borrar-faixa 0.63:0.80` borra a faixa;
-`--janela 0:33` usa só esse trecho do base (ex.: para fugir de um CTA antigo no fim).
+## Motor de vídeo (`remotion/`)
+
+- `src/modelos/Legenda.tsx`: o modelo genérico (props montadas em `editor/producao.py::_props_legenda`).
+- Roteiro `proprio`: o código fica em `projetos/<id>/cenas/` e os arquivos em `projetos/<id>/public/`; no render,
+  as cenas são copiadas para `remotion/src/_projetos/<id>/` (fora do git). Exemplo vivo: o projeto
+  **Explicativo da ferramenta** (11 cenas, captura real do painel, landing sem marca).
+- `src/base.tsx`: Palavra que entra no tempo da fala, grade de pontos, HUD de câmera.
+
+## O que aprendemos (não repita estes erros)
+
+- **Leitura ótica**: confira todo render pela folha de contato (1 quadro/s) antes de mostrar. Foi assim que
+  apareceram a cena preta (caixa sem altura cortando o vídeo) e a parede de vídeos empilhada.
+- **Porta própria por render** (a 3000 é do site Next.js do Eduardo) e `--public-dir` próprio com hardlinks.
+- **Concorrência 6**: a máquina divide CPU com o AutomaWeb Studio, que produz ao mesmo tempo.
+- **Saída** sempre `yuv420p` bt709, faststart; áudio em −14 LUFS (loudnorm em 2 passadas).
+- **Velocidade da MiniMax não é linear** (duração ∝ 1/vel^2,4). Whisper **sem** a copy no prompt; difflib `autojunk=False`.
+- Vozes "Standard Portuguese" da MiniMax podem soar de Portugal: escolha **pelo ouvido**.
+- "Veo" pode ser lido como "véu": ouça a narração.
+- **Gravar outra ferramenta**: só filmar (gdigrab), nunca clicar nela; esconder marca/nome com máscara na edição.
+- Capturar site: esconda marca por CSS **só na captura** (Playwright), o site não muda.
 
 ## Regras que não se quebram
 
-- ⛔ **A copy é sagrada.** O texto da campanha vai literal para o TTS e para a legenda. Não
-  "melhore" copy aprovada; se achar erro, pergunte.
-- ⛔ **Áudio do base nunca entra.** O base pode ter fala de outro criativo.
-- ⛔ **SFX só do pool liberado** (`sfx/catalogo.json`, `liberado: true`). Meme de filme/jogo/marca
-  fica bloqueado: o Rights Manager da Meta derruba o anúncio.
-- ⛔ **Música só da biblioteca** (`musica/`, Meta Sound Collection): livre em FB/IG, inclusive
-  em anúncio, e **somente** na Meta. Criativo para TikTok/YouTube precisa de outra trilha.
-- ⛔ **Nunca** comite `.env` (chave MiniMax), vídeos, áudios ou `campanhas/*/saida/`.
-- A voz padrão é `Portuguese_ChattyGirl` (`config/padrao.json` → `tts.voz`). Trocar por
-  campanha: bloco `ajustes` do `campanha.json` (ex.: `{"tts": {"voz": "..."}}`).
-- Mudou copy, voz, base ou config? Rode de novo: o lote refaz só o que mudou.
+- ⛔ **A copy é sagrada.** Não "melhore" copy aprovada; se achar erro, pergunte. (Exceção: abreviação como
+  "vc" vira "você" para a voz ler certo; avise.)
+- ⛔ **Música e efeitos só livres para uso comercial** (`musica/livre/`, `sfx/livre/`, Mixkit, com a licença no
+  catálogo). A Meta Sound Collection **não** entra: só vale dentro da Meta. Precisa de outra fonte? Pergunte.
+- ⛔ **Nunca** comite `.env` (chave MiniMax), mídia (mp4, wav, mp3, m4a), `projetos/`, `node_modules`, `.cache`.
+  Antes de cada commit: `git grep -nE "sk-[A-Za-z0-9_-]{20,}"` não pode achar nada.
+- ⛔ Ação para fora (push em repo de outra pessoa, publicar, subir arquivo): pergunte antes. No **seu** repo
+  `edividgeneral`, commit e push estão liberados.
+- Antes de lote grande: **1 amostra** para o Eduardo aprovar.

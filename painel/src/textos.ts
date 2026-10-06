@@ -1,29 +1,22 @@
-import type { Etapa } from "./api";
-
-export type Tom = "ok" | "run" | "fila" | "voce" | "no";
-export const ETAPA: Record<Etapa, { texto: string; tom: Tom }> = {
-  pendente: { texto: "Pendente", tom: "fila" },
-  fila: { texto: "Na fila", tom: "fila" },
-  narrando: { texto: "Narrando", tom: "run" },
-  renderizando: { texto: "Editando", tom: "run" },
-  entregue: { texto: "Entregue", tom: "ok" },
-  aviso: { texto: "Conferir", tom: "voce" },
-  erro: { texto: "Erro", tom: "no" },
-  parado: { texto: "Parado", tom: "fila" },
-};
-
-export const PERFIL: Record<string, string> = {
-  fe_emocional: "Fé e emoção", familia_doce: "Família, doce", brincar_alegre: "Brincar, alegre",
-  legado_nostalgia: "Legado, nostalgia", oferta_energia: "Oferta, energia",
-};
-
-export const TRANSICAO: Record<string, string> = {
-  iris: "Íris", pop_elastico: "Pop elástico", boing: "Boing", balanco: "Balanço", giro_cartoon: "Giro cartoon",
-  chicote_h: "Chicote", chicote_v: "Chicote vertical", zoom_punch: "Zoom punch", zoom_suave: "Zoom suave",
-  giro: "Giro", flash: "Flash", impacto: "Impacto", desfoque: "Desfoque", deslize: "Deslize", cortina: "Cortina",
-  revelar: "Revelar", circulo: "Círculo", radial: "Radial", dissolve: "Dissolver", abre: "Abre", aperto: "Aperto", luz: "Light leak",
-};
-
 export const numero = (n: number) => n.toLocaleString("pt-BR");
-export const seg = (s: number | null | undefined) => (s == null ? "—" : `${Math.round(s)}s`);
-export const nomeBonito = (slug: string) => slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+export const seg = (s: number | null | undefined) => (s == null ? "—" : `${Math.round(s)} s`);
+export const mmss = (s: number) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+export const tempoRender = (s: number) => (s >= 60 ? `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, "0")} s` : `${s} s`);
+
+export function quando(iso?: string) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  const hoje = new Date();
+  const hh = d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  if (d.toDateString() === hoje.toDateString()) return `hoje, ${hh}`;
+  return `${d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}, ${hh}`;
+}
+
+/** "Portuguese_Deep-VoicedGentleman" -> "Deep-Voiced Gentleman" */
+export const nomeVoz = (id?: string) => (id ? id.replace(/^[A-Za-z]+_/, "").replace(/(?<=[a-z])(?=[A-Z])/g, " ") : "—");
+
+export const IDIOMA: Record<string, string> = {
+  Portuguese: "Português", English: "Inglês", Spanish: "Espanhol", French: "Francês", German: "Alemão", Italian: "Italiano",
+};
+
+export const DESTINOS = ["YouTube", "Instagram", "TikTok", "WhatsApp", "Cliente"];

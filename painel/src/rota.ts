@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
+import type { EtapaId } from "./api";
 
-// rotas por hash: #/ · #/criativos · #/nova · #/ajustes · #/c/1.5
-export type Rota = { tela: "painel" | "criativos" | "nova" | "ajustes"; criativo?: string };
+// rotas por hash: #/ · #/novo · #/p/<id>[/<etapa>] · #/biblioteca · #/ajustes
+export type Rota = { tela: "projetos" | "novo" | "projeto" | "biblioteca" | "ajustes"; id?: string; etapa?: EtapaId };
 
 function ler(): Rota {
   const h = location.hash.replace(/^#\/?/, "");
-  if (h.startsWith("c/")) return { tela: "criativos", criativo: decodeURIComponent(h.slice(2)) };
-  if (h.startsWith("criativos")) return { tela: "criativos" };
-  if (h.startsWith("nova")) return { tela: "nova" };
+  if (h.startsWith("p/")) {
+    const [, id, etapa] = h.split("/");
+    return { tela: "projeto", id: decodeURIComponent(id), etapa: (etapa || undefined) as EtapaId | undefined };
+  }
+  if (h.startsWith("novo")) return { tela: "novo" };
+  if (h.startsWith("biblioteca")) return { tela: "biblioteca" };
   if (h.startsWith("ajustes")) return { tela: "ajustes" };
-  return { tela: "painel" };
+  return { tela: "projetos" };
 }
 
 export function useRota(): Rota {
@@ -23,6 +27,6 @@ export function useRota(): Rota {
 }
 
 export const link = {
-  painel: "#/", criativos: "#/criativos", nova: "#/nova", ajustes: "#/ajustes",
-  criativo: (id: string) => `#/c/${encodeURIComponent(id)}`,
+  projetos: "#/", novo: "#/novo", biblioteca: "#/biblioteca", ajustes: "#/ajustes",
+  projeto: (id: string, etapa?: EtapaId) => `#/p/${encodeURIComponent(id)}${etapa ? `/${etapa}` : ""}`,
 };

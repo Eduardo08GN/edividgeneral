@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-"""CONFIG — caminhos, .env, padroes da campanha e o `run()` unico para ffmpeg/ffprobe.
+"""CONFIG — caminhos, .env, padroes do AutoTube e o `run()` unico para ffmpeg/ffprobe.
 
-⭐ Um lugar so' para ler configuracao: `padrao()` junta config/padrao.json + o bloco `ajustes`
-da campanha + variaveis de ambiente (EDT_*). Quem desenha/monta recebe o dict pronto.
+⭐ Um lugar so' para ler configuracao: `padrao()` junta config/padrao.json + os `ajustes` do projeto
+(e da tela Ajustes) + variaveis de ambiente (EDT_*). Quem usa recebe o dict pronto.
 """
 import io, json, os, subprocess, sys
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FONTES_DIR = os.path.join(RAIZ, "fontes")
-CAMPANHAS_DIR = os.path.join(RAIZ, "campanhas")
+PROJETOS_DIR = os.path.join(RAIZ, "projetos")
 SFX_DIR = os.path.join(RAIZ, "sfx")
 SFX_POOL = os.path.join(SFX_DIR, "pool")
 CACHE_DIR = os.path.join(RAIZ, ".cache")
@@ -64,22 +64,20 @@ def duracao(path):
 
 
 def padrao(ajustes=None):
-    """Config efetiva: config/padrao.json < ajustes da campanha < EDT_* do ambiente."""
+    """Config efetiva: config/padrao.json < ajustes < EDT_* do ambiente."""
     cfg = json.load(io.open(PADRAO_JSON, encoding="utf-8"))
     for k, v in (ajustes or {}).items():
         if isinstance(v, dict) and isinstance(cfg.get(k), dict): cfg[k].update(v)
         else: cfg[k] = v
-    amb = {"EDT_VOZ": ("tts", "voz"), "EDT_TTS": ("tts", "provedor"), "EDT_MODELO": ("tts", "modelo"),
-           "EDT_LEGENDA": ("legenda", "estilo")}
+    amb = {"EDT_VOZ": ("tts", "voz"), "EDT_TTS": ("tts", "provedor"), "EDT_MODELO": ("tts", "modelo")}
     for env, (sec, chave) in amb.items():
         if os.environ.get(env): cfg[sec][chave] = os.environ[env]
-    if cfg.get("turbo"): aplicar_turbo(cfg)
     return cfg
 
 
 def mesclar(cfg, ajustes):
     """Copia de `cfg` com `ajustes` por cima (dois niveis: {"video": {"motion_graphics": {...}}}).
-    Usado pelos ajustes de UM criativo, que valem por cima da campanha e do Turbo."""
+    Usado pelos ajustes de UM projeto, que valem por cima do padrao."""
     import copy
     out = copy.deepcopy(cfg)
     for k, v in (ajustes or {}).items():
@@ -89,32 +87,6 @@ def mesclar(cfg, ajustes):
                 else: out[k][kk] = vv
         else: out[k] = v
     return out
-
-
-def aplicar_turbo(cfg):
-    """⭐ MODO TURBO (pedido do operador, 2026-10-04): liga todos os recursos tops, QUANDO pertinentes.
-    O que e' "pertinente" e' decidido na hora de cada criativo, nao aqui:
-      - gancho animado so' aparece se o nome do produto tiver um numero para contar (motor_remotion);
-      - musica automatica so' toca se a biblioteca tiver faixa; corte na batida so' com musica;
-      - sem Node/Remotion na maquina, o lote cai no motor atual e AVISA (lote.produzir).
-    ⛔ NAO mexe no ESTILO das transicoes (pesos: cartoon na Biblia, editor nas outras) nem na voz/copy:
-       turbo e' "mais recurso", nao "outra cara"."""
-    cfg["motor"] = "remotion"
-    v = cfg["video"]
-    v["motion_graphics"] = {"gancho": True, "fecho": True}
-    # ⛔ 2026-10-05: o motion blur da camera (CameraMotionBlur, 6 amostras) desenhava cada quadro de transicao
-    #    6 vezes e mais que DOBRAVA o render (81 s -> 35 s em 300 quadros sem ele). As transicoes ja' tem
-    #    borrao de movimento proprio (chicote, corte na curva, giro): o turbo nao liga mais o blur da camera.
-    v["emojis"] = dict(v.get("emojis") or {}, ativo=True)
-    v["selos"] = dict(v.get("selos") or {}, ativo=True)
-    v["camera_lenta"] = dict(v.get("camera_lenta") or {}, ativo=True)
-    v["cortar_na_batida"] = True
-    cfg["audio"]["sfx"] = True
-    if os.path.isdir(os.path.join(RAIZ, "musica", "biblioteca")) and os.listdir(os.path.join(RAIZ, "musica", "biblioteca")):
-        cfg["audio"]["musica"] = "auto"
-    t = cfg.setdefault("transicoes", {})
-    t["proporcao"] = max(float(t.get("proporcao", 0.6)), 0.7)
-    return cfg
 
 
 def slug(txt, n=40):

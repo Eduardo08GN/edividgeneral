@@ -1,146 +1,72 @@
 import { useEffect, useState } from "react";
-import { Save } from "lucide-react";
-import { enviar } from "../api";
 import type { Ctx } from "../App";
+import { enviar, ler } from "../api";
 import { Girando, useAcao } from "../componentes/base";
+import { useVozes } from "../componentes/Vozes";
+import { nomeVoz } from "../textos";
 
-// ⭐ ajustes valem PARA A CAMPANHA ABERTA (ficam no campanha.json); o padrao geral fica em config/padrao.json
-const PESOS_CARTOON = { iris: 5, pop_elastico: 5, boing: 5, balanco: 4, giro_cartoon: 4, circulo: 2, zoom_punch: 1.5, chicote_h: 1, chicote_v: 1, luz: 1, flash: 1 };
-
-function Interruptor({ ligado, mudar, rotulo }: { ligado: boolean; mudar: (v: boolean) => void; rotulo: string }) {
-  return <button type="button" role="switch" aria-checked={ligado} aria-label={rotulo} className="switch" onClick={() => mudar(!ligado)} />;
+interface Aj {
+  tts: { voz: string; velocidade: number; modelo: string };
+  render: { concorrencia: number; crf: number; escala_previa: number };
+  audio: { lufs: number; musica_vol: number; sfx: boolean };
+  pastas: { projetos: string };
 }
 
 export function Ajustes({ ctx }: { ctx: Ctx }) {
-  const camp = ctx.camp;
+  const [aj, setAj] = useState<Aj | null>(null);
+  const vozes = useVozes(ctx.avisar);
   const { rodando, rodar } = useAcao(ctx.avisar);
-  const ef = camp?.efetivo;
-  const [voz, setVoz] = useState(ef?.voz ?? "");
-  const [vel, setVel] = useState(ef?.velocidade ?? 1);
-  const [modelo, setModelo] = useState(ef?.modelo ?? "alternar");
-  const [motor, setMotor] = useState(ef?.motor ?? "remotion");
-  const [gancho, setGancho] = useState(ef?.motion_graphics?.gancho ?? true);
-  const [fecho, setFecho] = useState(ef?.motion_graphics?.fecho ?? true);
-  const [emojis, setEmojis] = useState(ef?.emojis ?? true);
-  const [lenta, setLenta] = useState(ef?.camera_lenta ?? true);
-  const [selos, setSelos] = useState(ef?.selos ?? true);
-  const [musica, setMusica] = useState(ef?.musica === "auto");
-  const [sfx, setSfx] = useState(ef?.sfx ?? true);
-  const temCartoon = !!ef?.transicoes?.pesos && Object.keys(ef.transicoes.pesos).some((k) => k === "iris");
-  const [estilo, setEstilo] = useState<"cartoon" | "padrao">(temCartoon ? "cartoon" : "padrao");
-  const [prop, setProp] = useState(ef?.transicoes?.proporcao ?? 0.6);
-  const [autoPub, setAutoPub] = useState(camp?.publicar?.auto !== false);
-  useEffect(() => {
-    if (!ef) return;
-    setVoz(ef.voz); setVel(ef.velocidade); setModelo(ef.modelo ?? "alternar"); setMotor(ef.motor ?? "remotion");
-    setGancho(ef.motion_graphics?.gancho ?? true); setFecho(ef.motion_graphics?.fecho ?? true); setMusica(ef.musica === "auto"); setSfx(ef.sfx);
-    setEmojis(ef.emojis ?? true); setLenta(ef.camera_lenta ?? true); setSelos(ef.selos ?? true);
-    setEstilo(ef.transicoes?.pesos && "iris" in ef.transicoes.pesos ? "cartoon" : "padrao"); setProp(ef.transicoes?.proporcao ?? 0.6);
-    setAutoPub(camp?.publicar?.auto !== false);
-  }, [camp?.nome]);   // eslint-disable-line react-hooks/exhaustive-deps
-  if (!camp) return <div className="tela"><div className="panel vazio"><h2>Abra uma campanha para ajustar</h2></div></div>;
-
-  const salvar = () => rodar("salvar", async () => {
-    await enviar(`/api/campanhas/${encodeURIComponent(camp.nome)}/ajustes`, {
-      tts: { voz: voz.trim(), velocidade: Number(vel) },
-      modelo,
-      motor,
-      video: { motion_graphics: { gancho, fecho }, emojis: { ativo: emojis }, selos: { ativo: selos }, camera_lenta: { ativo: lenta } },
-      audio: { musica: musica ? "auto" : "", sfx },
-      transicoes: { proporcao: Number(prop), pesos: estilo === "cartoon" ? PESOS_CARTOON : {} },
-      ...(camp.publicar?.repo ? { publicar: { auto: autoPub } } : {}),
-    });
-    ctx.recarregar();
-  }, "Ajustes salvos. Valem para os próximos criativos produzidos (use Refazer para aplicar nos prontos).");
-
+  useEffect(() => { ler<Aj>("/api/ajustes").then(setAj).catch((x) => ctx.avisar((x as Error).message, "erro")); }, [ctx]);
+  if (!aj) return <div className="tela"><div className="panel vazio"><Girando /></div></div>;
+  const salvar = (novo: Partial<Aj>) => rodar("aj", async () => { setAj(await enviar<Aj>("/api/ajustes", novo)); await ctx.recarregar(); }, "Ajustes salvos");
+  const pt = (vozes ?? []).filter((v) => v.idioma === "Portuguese");
+  const c = ctx.estado.conexoes;
   return (
-    <div className="tela">
-      <header className="tela-topo">
-        <div><p className="eyebrow">Ajustes · {camp.produto || camp.nome}</p><h1>Como os criativos <em>saem</em></h1>
-          <p className="lead">Estes ajustes valem só para esta campanha.</p></div>
-        <button className="btn btn-primary" type="button" disabled={!!rodando} onClick={salvar}>
-          {rodando === "salvar" ? <Girando /> : <Save size={16} aria-hidden />}Salvar ajustes
-        </button>
-      </header>
+    <div className="tela tela-estreita">
+      <div className="tela-topo"><div>
+        <p className="eyebrow">Ajustes</p><h1>Padrões do <em>AutoTube</em></h1>
+        <p className="lead">Valem para todo projeto novo. Cada projeto pode mudar a voz e a trilha nas próprias etapas.</p>
+      </div>{rodando && <Girando />}</div>
 
-      {ef?.turbo && (
-        <div className="panel attn turbo-aviso">
-          <span className="ico-box">⚡</span>
-          <div><strong>Modo Turbo ligado</strong>
-            <p>Motor Remotion, gancho e fecho animados, emojis, selos de confiança, câmera lenta por IA, corte na batida, música recortada e SFX estão no máximo, valendo por cima dos itens abaixo. Voz, modelo e estilo das transições continuam os seus. Desligue no botão do Painel.</p></div>
+      <section className="panel bloco">
+        <h3>Voz padrão</h3>
+        <div className="linha-2">
+          <label className="campo-bloco"><span className="label">Voz</span>
+            <select className="campo" value={aj.tts.voz} onChange={(e) => salvar({ tts: { ...aj.tts, voz: e.target.value } })}>
+              {!pt.some((v) => v.id === aj.tts.voz) && <option value={aj.tts.voz}>{nomeVoz(aj.tts.voz)}</option>}
+              {pt.map((v) => <option key={v.id} value={v.id}>{v.nome}{v.genero ? ` · ${v.genero}` : ""}</option>)}
+            </select></label>
+          <label className="campo-bloco"><span className="label">Velocidade · {aj.tts.velocidade.toFixed(2)}×</span>
+            <input type="range" min={0.85} max={1.2} step={0.05} value={aj.tts.velocidade}
+                   onChange={(e) => setAj({ ...aj, tts: { ...aj.tts, velocidade: Number(e.target.value) } })}
+                   onMouseUp={() => salvar({ tts: aj.tts })} onKeyUp={() => salvar({ tts: aj.tts })} /></label>
         </div>
-      )}
-
-      <section className="panel bloco" aria-label="Voz">
-        <h3>Voz (MiniMax)</h3>
-        <div className="duas">
-          <label className="campo-grupo"><span className="label">ID da voz</span>
-            <input className="campo" value={voz} onChange={(e) => setVoz(e.target.value)} style={{ fontFamily: "var(--ow-font-mono)", fontSize: 13 }} /></label>
-          <label className="campo-grupo"><span className="label">Velocidade natural ({Number(vel).toFixed(2)}×)</span>
-            <input type="range" min={0.9} max={1.25} step={0.01} value={vel} onChange={(e) => setVel(Number(e.target.value))} /></label>
-        </div>
-        <p className="meta">A ferramenta ajusta a velocidade só um pouco (1,00 a 1,12) para encaixar no tempo da copy, sem mudar a cara da voz.</p>
       </section>
 
-      <section className="panel bloco" aria-label="Motor de render">
-        <h3>Motor de render</h3>
-        <div className="seg" role="group" aria-label="Motor de render">
-          <button type="button" aria-pressed={motor === "remotion"} onClick={() => setMotor("remotion")}>Remotion · legenda e gráficos animados</button>
-          <button type="button" aria-pressed={motor === "ffmpeg"} onClick={() => setMotor("ffmpeg")}>Atual · mais rápido</button>
+      <section className="panel bloco">
+        <h3>Render</h3>
+        <div className="linha-2">
+          <div className="campo-bloco"><span className="label">Abas de render ao mesmo tempo</span>
+            <div className="filtros">{[4, 6, 8].map((n) => (
+              <button key={n} type="button" className="filtro" aria-pressed={aj.render.concorrencia === n} onClick={() => salvar({ render: { ...aj.render, concorrencia: n } })}>{n}</button>
+            ))}</div>
+            <p className="meta">6 é o equilíbrio nesta máquina: ela divide a CPU com as outras ferramentas.</p></div>
+          <div className="campo-bloco"><span className="label">Volume da trilha sob a voz · {Math.round(aj.audio.musica_vol * 100)}%</span>
+            <input type="range" min={0.05} max={0.5} step={0.01} value={aj.audio.musica_vol}
+                   onChange={(e) => setAj({ ...aj, audio: { ...aj.audio, musica_vol: Number(e.target.value) } })}
+                   onMouseUp={() => salvar({ audio: aj.audio })} onKeyUp={() => salvar({ audio: aj.audio })} />
+            <p className="meta">O áudio final sai sempre em {aj.audio.lufs} LUFS (padrão das redes).</p></div>
         </div>
-        <p className="meta">Mesmos cortes, voz, música e SFX. O Remotion anima a legenda (a palavra falada pula), o título, o selo e o CTA, e tem transições com mola. Demora ~2 min por criativo (o atual, ~1 min).</p>
       </section>
 
-      <section className="panel bloco" aria-label="Motion graphics">
-        <h3>Motion graphics</h3>
-        {motor !== "remotion" && <p className="meta">Só aparecem com o motor Remotion. No motor atual, estes ajustes ficam guardados mas não entram no vídeo.</p>}
-        <div className="switch-linha"><div><strong>Gancho animado</strong>
-          <p className="meta">Nos primeiros ~2 s: o ponto conta até o número do produto (ex.: 0 → 70), vira a pílula com o rótulo e sobe para virar o título.</p></div>
-          <Interruptor ligado={gancho} mudar={setGancho} rotulo="Gancho animado" /></div>
-        <div className="switch-linha"><div><strong>Cartão de fecho</strong>
-          <p className="meta">No “clique em saiba mais”: o vídeo vira um cartão, o nome do produto se escreve e o botão SAIBA MAIS se forma com as setas.</p></div>
-          <Interruptor ligado={fecho} mudar={setFecho} rotulo="Cartão de fecho" /></div>
-        <div className="switch-linha"><div><strong>Emojis animados</strong>
-          <p className="meta">Um emoji animado salta acima da legenda nas palavras-chave (bebê 🐣, oração 🙏, amor ❤️, presente 🎁). No máximo 4 por vídeo, um a cada 5 s.</p></div>
-          <Interruptor ligado={emojis} mudar={setEmojis} rotulo="Emojis animados" /></div>
-        <div className="switch-linha"><div><strong>Selos de confiança</strong>
-          <p className="meta">Quando a narração fala de garantia, suporte no WhatsApp, acesso imediato ou compra segura, um selo animado entra na tela. O preço ganha um estouro de confete.</p></div>
-          <Interruptor ligado={selos} mudar={setSelos} rotulo="Selos de confiança" /></div>
-        <div className="switch-linha"><div><strong>Câmera lenta por IA</strong>
-          <p className="meta">Quando um clipe é curto para o plano, a IA (RIFE) cria quadros novos e desacelera o trecho em vez de congelar a imagem ou pular a ordem da história. Até 2 por vídeo.</p></div>
-          <Interruptor ligado={lenta} mudar={setLenta} rotulo="Câmera lenta por IA" /></div>
-      </section>
-
-      <section className="panel bloco" aria-label="Edição">
-        <h3>Edição</h3>
-        <div className="campo-grupo"><span className="label">Modelo de criativo</span>
-          <div className="seg" role="group" aria-label="Modelo">
-            {[["alternar", "Alternar 1 e 2"], ["1", "Modelo 1 · CTA embaixo"], ["2", "Modelo 2 · título e CTA no topo"]].map(([v, t]) => (
-              <button key={v} type="button" aria-pressed={modelo === v} onClick={() => setModelo(v)}>{t}</button>
-            ))}
-          </div>
-        </div>
-        <div className="campo-grupo"><span className="label">Estilo das transições</span>
-          <div className="seg" role="group" aria-label="Estilo das transições">
-            <button type="button" aria-pressed={estilo === "cartoon"} onClick={() => setEstilo("cartoon")}>Cartoon (íris, boing, pop, balanço)</button>
-            <button type="button" aria-pressed={estilo === "padrao"} onClick={() => setEstilo("padrao")}>Editor (chicote, zoom, flash, luz)</button>
-          </div>
-        </div>
-        <label className="campo-grupo"><span className="label">Cortes com transição animada · {Math.round(prop * 100)}%</span>
-          <input type="range" min={0.2} max={1} step={0.05} value={prop} onChange={(e) => setProp(Number(e.target.value))} /></label>
-      </section>
-
-      <section className="panel bloco" aria-label="Áudio">
-        <h3>Áudio</h3>
-        <div className="switch-linha"><div><strong>Música automática</strong><p className="meta">A ferramenta lê o ângulo e escolhe a faixa da Meta Sound Collection.</p></div>
-          <Interruptor ligado={musica} mudar={setMusica} rotulo="Música automática" /></div>
-        {camp.publicar?.repo && (
-          <div className="switch-linha"><div><strong>Enviar para o GitHub ao terminar</strong>
-            <p className="meta">{camp.publicar.repo.replace("https://github.com/", "")} → {camp.publicar.pasta}</p></div>
-            <Interruptor ligado={autoPub} mudar={setAutoPub} rotulo="Enviar para o GitHub ao terminar" /></div>
-        )}
-        <div className="switch-linha"><div><strong>Efeitos sonoros</strong><p className="meta">Nas transições, no preço e no CTA, só do pool liberado.</p></div>
-          <Interruptor ligado={sfx} mudar={setSfx} rotulo="Efeitos sonoros" /></div>
+      <section className="panel bloco">
+        <h3>Conexões e pastas</h3>
+        <ul className="conexoes">
+          <li className={c.minimax ? "on" : ""}><span className="dot" />MiniMax (voz) · {c.minimax ? "chave encontrada no .env" : "falta MINIMAX_API_KEY no .env"}</li>
+          <li className={c.motor ? "on" : ""}><span className="dot" />Motor de vídeo (Remotion/Node) · {c.motor ? "pronto" : "instale o Node.js"}</li>
+          <li className={c.claude ? "on" : ""}><span className="dot" />Claude · {c.claude ? "encontrado (copys e roteiro nas fases 3 e 4)" : "não encontrado"}</li>
+        </ul>
+        <p className="meta">Projetos em <code>{aj.pastas.projetos}</code></p>
       </section>
     </div>
   );

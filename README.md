@@ -1,25 +1,11 @@
-# EdiVid (edividgeneral)
+# AutoTube
 
-> **Ferramenta de edição de vídeo genérica.** Nasceu em 2026-10-06 como cópia do
-> [editingtool](https://github.com/Eduardo08GN/editingtool) (o motor de criativos low ticket, que continua
-> separado). A nova arquitetura ainda vai ser desenhada; até lá, o que está abaixo descreve o fluxo herdado.
-> Aqui a publicação no repo do time está **desligada**, o painel abre na porta **8801** e o atalho é
-> **`EdiVid.cmd`**.
+Editor de vídeo genérico: você escreve (ou escolhe) a **copy falada**, ouve e escolhe a **voz**, e o AutoTube
+monta o vídeo com tipografia em movimento ou motion graphics próprios, trilha e efeitos livres para uso
+comercial, em **16:9, 9:16 ou 1:1**, com o áudio em −14 LUFS.
 
-Editor automático herdado do editingtool (criativos de low ticket). Recebe **um vídeo base** e o
-**mapa de ângulos** (25 copys) e devolve 25 vídeos **9:16** com:
-
-- narração gerada pela **MiniMax** (voz padrão `Portuguese_ChattyGirl`);
-- **legenda queimada** palavra a palavra, com a palavra falada em amarelo;
-- cortes casados com a voz e zoom punch-in;
-- **selo de preço** quando a copy fala o valor;
-- **CTA "SAIBA MAIS"** com setas no fim;
-- **SFX** do pool do time, escolhidos por palavra-chave e por corte;
-- **música** da Meta Sound Collection escolhida pelo clima de cada ângulo;
-- áudio normalizado em −14 LUFS.
-
-Quem opera é o Claude Code: leia o [`CLAUDE.md`](CLAUDE.md), que é o motor. Detalhes técnicos estão em
-[`docs/ARQUITETURA.md`](docs/ARQUITETURA.md) e a regra das copys em [`docs/ANGULOS.md`](docs/ANGULOS.md).
+Nasceu em 2026-10-06 como cópia do [editingtool](https://github.com/Eduardo08GN/editingtool) (o motor de
+criativos low ticket, que continua separado). Quem opera é o Claude Code: leia o [`CLAUDE.md`](CLAUDE.md).
 
 ## Instalação
 
@@ -28,41 +14,22 @@ pip install -r requirements.txt
 ```
 
 1. Copie `.env.example` para `.env` e preencha `MINIMAX_API_KEY`.
-2. Tenha o ffmpeg no PATH (ou indique-o em `FFMPEG` / `FFPROBE` no `.env`).
-3. Baixe o pool de SFX com `python edt.py sfx sync` (vai para `sfx/pool/`, fora do git).
-4. Coloque as faixas da Meta Sound Collection em `musica/biblioteca/`, com os nomes de
-   `musica/catalogo.json`. Elas ficam fora do git porque a licença vale só nos apps da Meta.
+2. Tenha o ffmpeg no PATH (ou indique `FFMPEG` / `FFPROBE` no `.env`) e o Node.js (motor de vídeo).
+3. Baixe as trilhas livres: `python edt.py musica sync` (vão para `musica/livre/`, fora do git).
 
-## Motor de render
+## Uso
 
-O padrão é o **Remotion**: legenda, título, selo e CTA animados. Ele precisa do Node.js, e a ferramenta instala o que precisa em `remotion/` sozinha na primeira vez. Em **Ajustes** dá para voltar ao motor original (ffmpeg), que é mais rápido.
+Dois cliques em **`AutoTube.cmd`** (ou `python edt.py painel`). Cada projeto passa por 6 etapas:
+**Briefing → Copy → Voz → Material → Roteiro → Produção**. No modo **Guiado** você aprova cada escolha;
+no **Automático**, um botão produz tudo.
 
-## Interface
-
-Dê dois cliques em `EdiVid.cmd` (ou rode `python edt.py painel`). A janela abre com o painel da campanha:
-- produzir e parar;
-- progresso;
-- os criativos organizados por público.
-
-Pela interface também dá para criar campanhas e ajustar voz, modelo, transições, música e SFX.
-
-## Uso rápido
-
-```bash
-python edt.py importar campanhas/minha-campanha/copys.txt --campanha minha-campanha
-python edt.py amostra minha-campanha --base base.mp4 --id 1.1
-python edt.py produzir minha-campanha --base base.mp4 --workers 3
-```
-
-A saída fica em `campanhas/<nome>/saida/`:
-- `_entregues/*.mp4`
-- `player.html` (revisão)
-- `relatorio.json`
-
-Cada criativo tem também a própria pasta, com `plano.json` e `qa.json`.
+Os projetos ficam em `projetos/<id>/` (fora do git): `projeto.json`, a narração, o material e as versões
+(`versoes/vN.mp4` + folha de contato).
 
 ## Créditos de terceiros
 
-- **Emojis animados**: [Google Noto Animated Emoji](https://googlefonts.github.io/noto-emoji-animation/), licença CC BY 4.0, via `@remotion/animated-emoji`. Baixados sob demanda para `.cache/emojis`.
-- **Câmera lenta por IA**: [rife-ncnn-vulkan](https://github.com/nihui/rife-ncnn-vulkan) (MIT), modelo RIFE v4.6. Baixado na primeira vez para `.cache/ferramentas`.
-- **Alinhamento fino da legenda**: modelo MMS_FA da Meta via `torchaudio` (alinhamento forçado wav2vec2 + CTC, a técnica do WhisperX).
+- **Trilhas e efeitos**: [Mixkit](https://mixkit.co/license/) (licença gratuita, uso comercial, sem crédito). A origem de cada arquivo está em `musica/livre/catalogo.json` e `sfx/livre/catalogo.json`.
+- **Voz**: MiniMax T2A v2.
+- **Alinhamento fino da fala**: modelo MMS_FA da Meta via `torchaudio` (a técnica do WhisperX).
+- **Fontes** (OFL): Bricolage Grotesque, JetBrains Mono e Public Sans.
+- **Câmera lenta por IA** (herdada, opcional): [rife-ncnn-vulkan](https://github.com/nihui/rife-ncnn-vulkan) (MIT).
