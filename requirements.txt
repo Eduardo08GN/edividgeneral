@@ -1,8 +1,21 @@
-# nucleo
-faster-whisper>=1.1
-Pillow>=10
-numpy
+# nucleo (o pipeline nao roda sem estes)
+faster-whisper>=1.1        # editor/alinhar.py: tempos das palavras
+torch>=2.4                 # editor/alinhar.py: alinhamento forcado MMS_FA (versao CPU, ver abaixo)
+torchaudio>=2.4
+numpy>=1.26
+Pillow>=10                 # legendas e emojis
+librosa>=0.10              # editor/musica.py: batidas e tom da trilha
+fastapi>=0.110             # editor/servidor.py: painel
+uvicorn>=0.30
+pydantic>=2
+
+# torch/torchaudio CPU (esta maquina nao tem CUDA):
+#   pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+
 # opcionais
-# gdown            -> python edt.py sfx sync (baixa o pool de SFX do Drive)
-# kokoro soundfile -> TTS local gratis para teste (--tts kokoro)
-# torch speechbrain librosa -> ferramentas/voz_parecida.py
+gdown>=5                   # python edt.py sfx sync (baixa o pool de SFX do Drive)
+# opencv-python rapidocr-onnxruntime -> editor/limpar.py (apagar legenda queimada do video base)
+# kokoro soundfile                   -> TTS local gratis para teste (--tts kokoro)
+# speechbrain                        -> ferramentas/voz_parecida.py
+
+# Node (fora do pip): remotion/ instala sozinho no 1o render; painel/ -> npm install && npm run build
