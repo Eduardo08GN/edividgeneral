@@ -1,0 +1,134 @@
+{
+ "nome": "Explicativo da ferramenta",
+ "formato": "16:9",
+ "duracao_alvo": 40,
+ "destino": "YouTube · WhatsApp · apresentação para clientes",
+ "briefing": {
+  "o_que": "Vídeo de vendas da ferramenta de vídeos com IA (sem citar o nome AutomaWeb Studio)",
+  "publico": "Quem vende no TikTok Shop, Instagram e Facebook",
+  "objetivo": "Mostrar que a ferramenta produz vídeos sozinha, de madrugada, em volume",
+  "tom": "Direto, tech, premium; motion graphics no nível das referências",
+  "referencias": "Reels de motion design feitos com Claude (Ajith, annie) e o SaveClip (UI + narração); landing-portfólio de 12 vídeos"
+ },
+ "copys": [
+  {
+   "angulo": "Dorme e acorda",
+   "texto": "Hoje à noite, antes de dormir, você abre a ferramenta, escolhe os vídeos direto do seu computador e aperta um botão. Pronto. Pode ir dormir. Ela trabalha sozinha a noite inteira. Monta as cenas com o Veo, do Google. Coloca a narração. Coloca a legenda palavra por palavra. Corta, finaliza e separa tudo numa pasta. De manhã, você abre o computador e tem mais de cem vídeos prontos pra postar. No TikTok Shop, no Instagram, no Facebook. Sem câmera, sem ator, sem editor. Cem por cento automática. Você dorme, a ferramenta produz."
+  },
+  {
+   "angulo": "Pergunta pro vendedor",
+   "texto": "Quantos vídeos você postou hoje na sua loja do TikTok Shop? Três? Cinco? Quem vende mais está postando dezenas por dia. E não é uma equipe gravando. É assim: você escolhe os vídeos no seu computador, aperta um botão e vai dormir. A ferramenta usa o Veo, a inteligência artificial de vídeo do Google, pra montar cada cena. Faz a narração. Faz a legenda. Entrega pronto. Quando você acorda, são mais de cem vídeos esperando na pasta. É só postar. O volume que o algoritmo pede, sem você gravar nada."
+  },
+  {
+   "angulo": "Nenhum foi filmado",
+   "texto": "Olha esses vídeos. A senhora na cozinha. A enfermeira. As duas mulheres na fazenda. Nenhum deles foi filmado. Nenhuma câmera, nenhuma atriz, nenhum cenário. Todos foram feitos por uma ferramenta que monta as cenas com o Veo, do Google, coloca a narração, a legenda, e entrega o vídeo pronto pra postar. E ela faz isso sozinha. Você sobe os vídeos direto do seu computador, aperta um botão e vai dormir. De manhã, tem mais de cem vídeos prontos. Nada filmado. Tudo pronto."
+  },
+  {
+   "angulo": "Antes e agora",
+   "texto": "Antes: gravar, regravar, editar, legendar, exportar. Um vídeo por hora, se tudo desse certo. Agora: você escolhe os vídeos no seu computador e aperta um botão. Só isso. A ferramenta faz o resto sozinha. Monta cada cena com o Veo, do Google. Coloca a narração. Coloca a legenda. Corta e finaliza. Enquanto você dorme, ela não para. E quando você acorda, são mais de cem vídeos prontos pra subir no TikTok Shop, no Instagram e no Facebook. Antes, você era a produtora. Agora, você só posta."
+  },
+  {
+   "angulo": "O relógio da madrugada",
+   "texto": "Onze da noite. Você escolhe os vídeos no seu computador e aperta o botão. Meia-noite. A ferramenta já está montando as primeiras cenas no Veo, do Google. Duas da manhã. Narração, legenda, cortes. Vídeo pronto, próximo vídeo. Quatro da manhã. A fila não para, e você nem lembra que ela existe. Sete da manhã. Você acorda, abre a pasta... e tem mais de cem vídeos prontos pra postar. Sem câmera. Sem editor. Cem por cento automática. A sua produção trabalha no turno da noite."
+  },
+  {
+   "angulo": "O algoritmo quer volume",
+   "texto": "No TikTok Shop, no Instagram e no Facebook, quem posta mais vende mais. O algoritmo quer volume. E volume, até hoje, significava gravar o dia inteiro ou pagar uma equipe. Essa ferramenta mudou a conta. Você escolhe os vídeos no seu computador e aperta um botão. Ela usa o Veo, do Google, pra montar cada cena, faz a narração, coloca a legenda e entrega o vídeo finalizado. Sozinha, sem você mexer em nada. Uma noite de trabalho dela vira mais de cem vídeos de manhã. Volume de agência, sem agência."
+  },
+  {
+   "angulo": "Ela faz tudo",
+   "texto": "Ela monta as cenas. Ela faz a narração. Ela coloca a legenda, palavra por palavra. Ela corta, finaliza e organiza. Ela usa o Veo, a inteligência artificial de vídeo do Google. E ela faz tudo isso sozinha, enquanto você dorme. Você só faz duas coisas: escolhe os vídeos no seu computador e aperta um botão. O resto é com ela. De manhã, mais de cem vídeos prontos pra sua loja no TikTok Shop, no Instagram e no Facebook. Ela é uma ferramenta. E ela não tira folga."
+  },
+  {
+   "angulo": "O concorrente",
+   "texto": "Agora mesmo, enquanto você assiste isso, tem vendedor do TikTok Shop dormindo... e produzindo vídeo ao mesmo tempo. Parece impossível, mas é só uma ferramenta. Ela pega os vídeos que você escolhe no seu computador e trabalha sozinha a noite toda. Monta as cenas com o Veo, do Google. Narra. Legenda. Finaliza. De manhã, mais de cem vídeos prontos pra postar. Enquanto um vendedor grava três vídeos por dia, o outro posta cem. Adivinha quem vende mais? Escolhe de que lado você quer estar."
+  },
+  {
+   "angulo": "Sem câmera, sem ator, sem editor",
+   "texto": "Você não precisa de câmera. Não precisa aparecer. Não precisa contratar ator, nem editor, nem pagar criador de conteúdo. Pra vender com vídeo no TikTok Shop, no Instagram e no Facebook, você precisa de uma coisa: muito vídeo bom. E isso a ferramenta faz sozinha. Você sobe os vídeos direto do seu computador e aperta um botão. Ela monta as cenas com o Veo, do Google, coloca a narração e a legenda, e entrega pronto. Cem por cento automática. Você vai dormir e acorda com mais de cem vídeos na pasta."
+  },
+  {
+   "angulo": "Reel curto e seco",
+   "texto": "Você vai dormir. Ela trabalha. Monta as cenas com o Veo, do Google. Narra. Legenda. Finaliza. Sozinha. Você acorda com mais de cem vídeos prontos pra postar. Sem câmera, sem editor, sem gravar nada. Uma ferramenta. Cem por cento automática."
+  }
+ ],
+ "copy": "No TikTok Shop, no Instagram e no Facebook, quem posta mais vende mais. O algoritmo quer volume. E volume, até hoje, significava gravar o dia inteiro ou pagar uma equipe. Essa ferramenta mudou a conta. Você escolhe os vídeos no seu computador e aperta um botão. Ela usa o Veo, do Google, pra montar cada cena, faz a narração, coloca a legenda e entrega o vídeo finalizado. Sozinha, sem você mexer em nada. A ferramenta trabalha produzindo sozinha e te entrega os vídeos prontos ao você acordar. Uma noite de trabalho dela vira mais de cem vídeos de manhã. Volume de agência, sem agência.",
+ "copy_origem": "opção 6 (O algoritmo quer volume), editada por você",
+ "voz": {
+  "id": "Portuguese_Deep-VoicedGentleman",
+  "nome": "Deep-Voiced Gentleman",
+  "velocidade": 1.0
+ },
+ "roteiro": {
+  "modelo": "proprio",
+  "composicao": "Explicativo",
+  "cenas": [
+   {
+    "nome": "Plataformas",
+    "de": 0.0,
+    "ate": 5.5
+   },
+   {
+    "nome": "Volume",
+    "de": 5.5,
+    "ate": 7.0
+   },
+   {
+    "nome": "Custo",
+    "de": 7.0,
+    "ate": 11.5
+   },
+   {
+    "nome": "Virada",
+    "de": 11.5,
+    "ate": 13.33
+   },
+   {
+    "nome": "Entrada",
+    "de": 13.33,
+    "ate": 17.0
+   },
+   {
+    "nome": "Veo",
+    "de": 17.0,
+    "ate": 19.9
+   },
+   {
+    "nome": "Montagem",
+    "de": 19.9,
+    "ate": 24.0
+   },
+   {
+    "nome": "Piloto",
+    "de": 24.0,
+    "ate": 27.4
+   },
+   {
+    "nome": "Madrugada",
+    "de": 27.4,
+    "ate": 32.73
+   },
+   {
+    "nome": "Resultado",
+    "de": 32.73,
+    "ate": 36.17
+   },
+   {
+    "nome": "Fecho",
+    "de": 36.17,
+    "ate": 40.5
+   }
+  ]
+ },
+ "musica": {
+  "id": "mixkit-623",
+  "titulo": "Deep Urban",
+  "inicio": 15.51,
+  "usada": "mixkit-623"
+ },
+ "narracao": {
+  "duracao": 38.44,
+  "palavras": 104,
+  "casamento": 0.99
+ }
+}

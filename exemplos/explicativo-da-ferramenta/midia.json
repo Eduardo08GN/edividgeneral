@@ -1,0 +1,310 @@
+{
+ "_leia": "Mídia que as cenas usam (pasta public/ do projeto). Nada disto vai no git: está em projetos/explicativo-da-ferramenta/public/ na máquina do Eduardo. 'origem' diz como refazer cada arquivo.",
+ "itens": [
+  {
+   "arquivo": "musica.wav",
+   "bytes": 7872118,
+   "origem": "Mixkit 623 'Deep Urban' (musica/livre/catalogo.json), de 15,51 s, 41 s, fade-out de 2,5 s"
+  },
+  {
+   "arquivo": "narracao.wav",
+   "bytes": 3690230,
+   "origem": "MiniMax speech-2.6-hd, voz Portuguese_Deep-VoicedGentleman, 1.0x, a copy do projeto.json"
+  },
+  {
+   "arquivo": "fontes/bricolage-latin-ext.woff2",
+   "bytes": 18668,
+   "origem": "OFL, as mesmas de remotion/public/fontes"
+  },
+  {
+   "arquivo": "fontes/bricolage-latin.woff2",
+   "bytes": 41344,
+   "origem": "OFL, as mesmas de remotion/public/fontes"
+  },
+  {
+   "arquivo": "fontes/jbmono.woff2",
+   "bytes": 21168,
+   "origem": "OFL, as mesmas de remotion/public/fontes"
+  },
+  {
+   "arquivo": "fontes/publicsans-400.woff2",
+   "bytes": 14632,
+   "origem": "OFL, as mesmas de remotion/public/fontes"
+  },
+  {
+   "arquivo": "fontes/publicsans-500.woff2",
+   "bytes": 14656,
+   "origem": "OFL, as mesmas de remotion/public/fontes"
+  },
+  {
+   "arquivo": "fontes/publicsans-600.woff2",
+   "bytes": 14592,
+   "origem": "OFL, as mesmas de remotion/public/fontes"
+  },
+  {
+   "arquivo": "landing/01.mp4",
+   "bytes": 5105481,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/l05-aqpwrl-wdbca7xtm8vrc1ik-fiw00e-y2wkzm7fa-3.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/02.mp4",
+   "bytes": 2413057,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/final-b.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/03.mp4",
+   "bytes": 2546127,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/l06-aqnvljwerub5c4eppt7ligq7oqokzg2pndfb19mo-6.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/04.mp4",
+   "bytes": 4345182,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/l05-aqner-rdozyeerrear5nroh2mqx7k61dw-cnmng4-5.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/05.mp4",
+   "bytes": 4917611,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/l07-159-848-likes-2-4k-comments-954b4.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/06.mp4",
+   "bytes": 2745010,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/whatsapp-video-2026-09-21-at-07-06-49.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/07.mp4",
+   "bytes": 4393779,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/l02-970-likes-1-5k-comments-c818d.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/08.mp4",
+   "bytes": 2391156,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/final-a.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/09.mp4",
+   "bytes": 5246839,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/l05-aqmqnihjtihwvubn30c7msdty8g5dbjbsv7hqvjv-8.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/10.mp4",
+   "bytes": 4449768,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/l05-aqpnuylwgusyo6jyjmba21utfeioufknon3zu4m7-e.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/11.mp4",
+   "bytes": 3657805,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/l06-complexos-fdownloader-net-aqp-b-3umdgy-n-4.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/12.mp4",
+   "bytes": 3713194,
+   "origem": "https://pub-a64ff07a02a446df8b492d42e886c18b.r2.dev/v/whatsapp-video-2026-09-18-at-22-45-25-corte.mp4 (portfólio, bucket portfolioow)"
+  },
+  {
+   "arquivo": "landing/hero.png",
+   "bytes": 2440711,
+   "origem": "captura da landing-portfólio com Playwright (1920x1080 @2x), marca Organic Wave escondida por CSS só na captura"
+  },
+  {
+   "arquivo": "landing/pagina_inteira.png",
+   "bytes": 13208613,
+   "origem": "captura da landing-portfólio com Playwright (1920x1080 @2x), marca Organic Wave escondida por CSS só na captura"
+  },
+  {
+   "arquivo": "posters/01.jpg",
+   "bytes": 91828,
+   "origem": "quadro em 2,5 s de landing/01.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/02.jpg",
+   "bytes": 71806,
+   "origem": "quadro em 2,5 s de landing/02.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/03.jpg",
+   "bytes": 90848,
+   "origem": "quadro em 2,5 s de landing/03.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/04.jpg",
+   "bytes": 74941,
+   "origem": "quadro em 2,5 s de landing/04.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/05.jpg",
+   "bytes": 57285,
+   "origem": "quadro em 2,5 s de landing/05.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/06.jpg",
+   "bytes": 79597,
+   "origem": "quadro em 2,5 s de landing/06.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/07.jpg",
+   "bytes": 86234,
+   "origem": "quadro em 2,5 s de landing/07.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/08.jpg",
+   "bytes": 86955,
+   "origem": "quadro em 2,5 s de landing/08.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/09.jpg",
+   "bytes": 80066,
+   "origem": "quadro em 2,5 s de landing/09.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/10.jpg",
+   "bytes": 86339,
+   "origem": "quadro em 2,5 s de landing/10.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/11.jpg",
+   "bytes": 95886,
+   "origem": "quadro em 2,5 s de landing/11.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "posters/12.jpg",
+   "bytes": 153467,
+   "origem": "quadro em 2,5 s de landing/12.mp4 (ffmpeg, 540x960)"
+  },
+  {
+   "arquivo": "sfx/alarme_beep.mp3",
+   "bytes": 54539,
+   "origem": "Mixkit 988: https://assets.mixkit.co/active_storage/sfx/988/988-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/bleep_ok.mp3",
+   "bytes": 17953,
+   "origem": "Mixkit 2520: https://assets.mixkit.co/active_storage/sfx/2520/2520-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/check.mp3",
+   "bytes": 5008,
+   "origem": "Mixkit 1120: https://assets.mixkit.co/active_storage/sfx/1120/1120-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/clique.mp3",
+   "bytes": 35602,
+   "origem": "Mixkit 1109: https://assets.mixkit.co/active_storage/sfx/1109/1109-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/clique_duplo.mp3",
+   "bytes": 10540,
+   "origem": "Mixkit 275: https://assets.mixkit.co/active_storage/sfx/275/275-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/contador.mp3",
+   "bytes": 319759,
+   "origem": "Mixkit 1054: https://assets.mixkit.co/active_storage/sfx/1054/1054-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/despertador.mp3",
+   "bytes": 365650,
+   "origem": "Mixkit 1003: https://assets.mixkit.co/active_storage/sfx/1003/1003-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/glitch_eletrico.mp3",
+   "bytes": 36538,
+   "origem": "Mixkit 2595: https://assets.mixkit.co/active_storage/sfx/2595/2595-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/glitch_texto.mp3",
+   "bytes": 146404,
+   "origem": "Mixkit 2950: https://assets.mixkit.co/active_storage/sfx/2950/2950-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/impacto_fundo.mp3",
+   "bytes": 115904,
+   "origem": "Mixkit 1143: https://assets.mixkit.co/active_storage/sfx/1143/1143-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/impacto_intro.mp3",
+   "bytes": 186754,
+   "origem": "Mixkit 2902: https://assets.mixkit.co/active_storage/sfx/2902/2902-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/logo_impacto.mp3",
+   "bytes": 281323,
+   "origem": "Mixkit 2900: https://assets.mixkit.co/active_storage/sfx/2900/2900-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/pop_longo.mp3",
+   "bytes": 15239,
+   "origem": "Mixkit 2358: https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/pop_seco.mp3",
+   "bytes": 39145,
+   "origem": "Mixkit 2364: https://assets.mixkit.co/active_storage/sfx/2364/2364-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/pop_ui.mp3",
+   "bytes": 9706,
+   "origem": "Mixkit 2356: https://assets.mixkit.co/active_storage/sfx/2356/2356-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/processando.mp3",
+   "bytes": 111072,
+   "origem": "Mixkit 3122: https://assets.mixkit.co/active_storage/sfx/3122/3122-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/relogio_rapido.mp3",
+   "bytes": 75790,
+   "origem": "Mixkit 1063: https://assets.mixkit.co/active_storage/sfx/1063/1063-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/reverse_riser.mp3",
+   "bytes": 311698,
+   "origem": "Mixkit"
+  },
+  {
+   "arquivo": "sfx/sweep.mp3",
+   "bytes": 27247,
+   "origem": "Mixkit 166: https://assets.mixkit.co/active_storage/sfx/166/166-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/sweep_curto.mp3",
+   "bytes": 18057,
+   "origem": "Mixkit 175: https://assets.mixkit.co/active_storage/sfx/175/175-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/tech_ok.mp3",
+   "bytes": 53753,
+   "origem": "Mixkit 3116: https://assets.mixkit.co/active_storage/sfx/3116/3116-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/tech_select.mp3",
+   "bytes": 4742,
+   "origem": "Mixkit 3124: https://assets.mixkit.co/active_storage/sfx/3124/3124-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/tech_slide.mp3",
+   "bytes": 26239,
+   "origem": "Mixkit 3120: https://assets.mixkit.co/active_storage/sfx/3120/3120-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/ui_zoom.mp3",
+   "bytes": 34864,
+   "origem": "Mixkit 2620: https://assets.mixkit.co/active_storage/sfx/2620/2620-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/whoosh_pop.mp3",
+   "bytes": 7829,
+   "origem": "Mixkit 3005: https://assets.mixkit.co/active_storage/sfx/3005/3005-preview.mp3"
+  },
+  {
+   "arquivo": "sfx/whoosh_rapido.mp3",
+   "bytes": 44574,
+   "origem": "Mixkit 1492: https://assets.mixkit.co/active_storage/sfx/1492/1492-preview.mp3"
+  },
+  {
+   "arquivo": "studio/painel.mp4",
+   "bytes": 26722850,
+   "origem": "gravação de 3 min da janela do AutomaWeb Studio (ffmpeg gdigrab, só filmagem, 1920x1040)"
+  }
+ ]
+}
